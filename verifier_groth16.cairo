@@ -1,13 +1,11 @@
 #This is a template for cairo based on verifier_groth16.sol.ejs on snarkjs/templates
 
-#%lang starknet
-
-
 %builtins range_check
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.memcpy import memcpy
 
 #TODO: investigate library syntax
 #TODO: find out what I can use in cairo to replace libraries
@@ -106,7 +104,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
     	assert input[1] = p.Y
     	assert input[2] = s
 
-    	#TODO: ???
+    	#TODO: investigate what the next block of code does
 
         #TODO: complete func
 
@@ -118,7 +116,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 
         #TODO: find out how to calculate the lengh of an array
 
-    	#TODO: HELP!
+    	#TODO: investigate what the next block of code does
 
         #TODO: complete func
 
@@ -148,6 +146,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
     func pairingProd3(a1 : G1Point, a2 : G2Point, 
     				  b1 : G2Point, b2 : G2Point,
     				  c1 : G1Point, c2 : G2Point) -> (r : felt)
+
     	let (p1 : G1Point*) = alloc()
     	let (p2 : G2Point*) = alloc()
 
@@ -209,10 +208,8 @@ from starkware.cairo.common.bool import TRUE, FALSE
 
     #auxiliary function used to create a G2Point off of the received numbers : G2Point([a,b],[c,d])
     
-    func BuildG2Point(a : felt
-                      b : felt
-                      c : felt
-                      d : felt) -> (r : G2Point):
+    func BuildG2Point(a : felt, b : felt,
+                      c : felt, d : felt) -> (r : G2Point):
 
         #TODO: change syntax to using new operator if available
 
@@ -230,42 +227,42 @@ from starkware.cairo.common.bool import TRUE, FALSE
 
 	func verifyingKey() -> (vk : VerifyingKey):
 
-    #TODO: test this in playground
-
 	#This is the part where the data is rendered
 
-	   vk.alfa1  = Pairing.G1Point(
+	   let alfa1 : G1Point = G1Point(
             <%=vk_alpha_1[0]%>,
             <%=vk_alpha_1[1]%>
         )
 
-        vk.beta2 : Pairing.G2Point = BuildG2Point(
+        let beta2 : G2Point = BuildG2Point(
             <%=vk_beta_2[0][1]%>,
             <%=vk_beta_2[0][0]%>,
             <%=vk_beta_2[1][1]%>,
             <%=vk_beta_2[1][0]%>
         )
 
-        vk.gamma2 : Pairing.G2Point = BuilgG2Point(
+        let gamma2 : G2Point = BuildG2Point(
             <%=vk_gamma_2[0][1]%>,
             <%=vk_gamma_2[0][0]%>,
             <%=vk_gamma_2[1][1]%>,
             <%=vk_gamma_2[1][0]%>
         )
-        vk.delta2 : Pairing.G2Point = BuildG2Point(
+        let delta2 : G2Point = BuildG2Point(
             <%=vk_delta_2[0][1]%>,
             <%=vk_delta_2[0][0]%>,
             <%=vk_delta_2[1][1]%>,
             <%=vk_delta_2[1][0]%>
         )
         
-        let (vk.IC : G1Point*) = alloc()
+        let (IC : G1Point*) = alloc()
         <% for (let i=0; i<IC.length; i++) { %>
-        vk.IC[<%=i%>] = Pairing.G1Point( 
+        assert IC[<%=i%>] = G1Point( 
             <%=IC[i][0]%>,
             <%=IC[i][1]%>
         )                                      
         <% } %>
+
+        return(VerifyingKey(alfa1, beta2, gamma2, delta2, IC))
 
 	end
 
@@ -276,17 +273,35 @@ from starkware.cairo.common.bool import TRUE, FALSE
         let vk : VerifyingKey = verifyingKey()
 
         #TODO: find out how to get the lengh of an array
+        #input vs IC lengh comparison
+
+        #for loop 
         #TODO: complete func
 
     end
 
     func verifyProof( a : felt*
-                      b : felt*
+                      b : felt**
                       c : felt*
                       input : felt*) -> (r : felt):
 
-        let proof : Proof = Proof(A= Pairing.G1Point(a[0], a[1]))
-        #TODO complete func
+        let proof : Proof = Proof(A = G1Point(a[0], a[1]),
+                                  B = BuildG2Point(b[0][0], b[0][1]
+                                                   b[1][0], b[1][1]),
+                                  C = G1Point(c[0], c[1]))
+
+        let (inputValues : felt) = alloc()
+
+        memcpy(input, inputValues, <%IC.length%>)  
+
+        if(verify(inputValues, proof) == 0){
+
+            return(FALSE)
+
+        } else {
+
+            return(TRUE)
+        }
 
     end
 

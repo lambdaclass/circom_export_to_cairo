@@ -15,15 +15,15 @@ clean : playground-compiled.json
 
 
 #Generates a cairo verifier by replacing the original template
-#Ignore if using from Dockerfile, this is meant to be used locally
+
 generate_verifier : replace_template make_verifier
 
 replace_template: verifier_groth16.cairo 
 
 	cp verifier_groth16.cairo verifier_groth16.sol.ejs
-	mv verifier_groth16.sol.ejs /opt/homebrew/lib/node_modules/snarkjs/templates/verifier_groth16.sol.ejs
+	mv verifier_groth16.sol.ejs /usr/local/lib/node_modules/snarkjs/templates/verifier_groth16.sol.ejs
 
-make_verifier: multiplier2_0001.zkey
+make_verifier: example_0001.zkey
 
-	snarkjs zkey export solidityverifier multiplier2_0001.zkey verifier.cairo
+	snarkjs zkey export solidityverifier example_0001.zkey verifier.cairo
 
