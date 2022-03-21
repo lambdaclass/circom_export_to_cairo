@@ -9,7 +9,9 @@ from starkware.cairo.common.uint256 import uint256_unsigned_div_rem
 from starkware.cairo.common.uint256 import uint256_eq
 from starkware.cairo.common.uint256 import uint256_sub
 from starkware.cairo.common.uint256 import uint256_add
+from starkware.cairo.common.uint256 import uint256_mul
 from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.bool import TRUE
 from starkware.cairo.common.bool import FALSE
 #TODO: investigate library syntax
@@ -31,10 +33,8 @@ end
 #Creates a G1Point off of the received numbers: G1Point(x,y)
 func BuildG1Point{range_check_ptr : felt}(x : felt, y : felt) -> (r: G1Point):
 
-    let X : Uint256 = getUint256(x)
-    let Y : Uint256 = getUint256(y)
-
-    return(G1Point(X,Y))
+         let p : G1Point = BuildG1Point(1,2)
+        return (p)
 
 end
         
@@ -85,18 +85,13 @@ end
 	end
 
 	#returns G2Point generator
-	func P2() -> (r : G2Point):
+	func P2{range_check_ptr : felt}() -> (r : G2Point):
 
-		let (arr1 : Uint256*) = alloc()
-        assert arr1[0] = getUint256(11559732032986387107991004021392285783925812861821192530917403151452391805634)
-        assert arr1[1] = getUint256(10857046999023057135944570762232829481370756359578518086990519993285655852781)
-        
-        let(arr2 : felt*) = alloc()
-        assert arr2[0] = getUint256(4082367875863433681332203403145435568316851327593401208105741076214120093531)
-        assert arr2[1] = getUint256(8495653923123431417604973247489272438418190587263600148770280649306958101930)
-        
-
-		return (G2Point(arr1, arr2))
+		let p : G2Point = BuildG2Point(11559732032986387107991004021392285783925812861821192530917403151452391805634,
+                                       10857046999023057135944570762232829481370756359578518086990519993285655852781,
+                                       4082367875863433681332203403145435568316851327593401208105741076214120093531,
+                                       8495653923123431417604973247489272438418190587263600148770280649306958101930)
+		return(p)
 
 	end
 
@@ -135,7 +130,7 @@ end
 
         return(G1Point(x, y))
 
-        #THIS FUNCTION WORKS BUT ITS NOT COMPLETE
+        #Ignored previous template implementation and went by definition of addition (p + (-p) = p)
     	#let (input : Uint256*) = alloc()
     	#assert input[0] = p1.X
     	#assert input[1] = p2.X
@@ -148,16 +143,26 @@ end
     end
 
     #returns the product of a G1Point p and a scalar s
-    func scalar_mu(p : G1Point, s : felt) -> (r : G1Point):
+  func scalar_mu{range_check_ptr : felt}(p : G1Point, s : felt) -> (r : G1Point):
 
-    	let (input : felt) = alloc()
+        assert_nn(s) #TODO check that this not a problem (felt size check)
+        if s == 0 :
+            return (G1Point(Uint256(0,0), Uint256(0,0)))
+        end
+        if s == 1:
+            return (p)
+        end
+            let p2 : G1Point = addition(p, p)
+            let result : G1Point = scalar_mu(p2, s - 1)
 
-    	assert input[0] = p.X
-    	assert input[1] = p.Y
-    	assert input[2] = s
-
+            return(result)
+        
+        #Ignored previous template implementation and went by definition of scalar multiplication (2*p = p+p)
+    	#let (input : felt) = alloc()
+    	#assert input[0] = p.X
+    	#assert input[1] = p.Y
+    	#assert input[2] = s
     	#TODO: investigate what the next block of code does
-
         #TODO: complete func
 
     end
@@ -166,10 +171,10 @@ end
     #returns the result of computing the pairing check
     func pairing(p1 : G1Point*, p2: G2Point*) -> (r : felt):
 
+        # Sum of everything should be 0
+
         #TODO: find out how to calculate the lengh of an array
-
     	#TODO: investigate what the next block of code does
-
         #TODO: complete func
 
     end
