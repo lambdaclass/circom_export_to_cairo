@@ -3,51 +3,97 @@
 %builtins range_check
 
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import unsigned_div_rem
-from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.memcpy import memcpy
-
+from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import uint256_unsigned_div_rem
+from starkware.cairo.common.uint256 import uint256_eq
+from starkware.cairo.common.uint256 import uint256_sub
+from starkware.cairo.common.uint256 import uint256_add
+from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.bool import TRUE
+from starkware.cairo.common.bool import FALSE
 #TODO: investigate library syntax
 #TODO: find out what I can use in cairo to replace libraries
 #TODO: learn more about starknet contracts
+
+
+#Auxiliary functions
+
+#Returns number as Uint256
+func getUint256{range_check_ptr}(number : felt) -> (r : Uint256):
+
+    let (high : felt, low : felt) = split_felt(number)
+
+    return(Uint256(low, high))
+
+end
+
+#Creates a G1Point off of the received numbers: G1Point(x,y)
+func BuildG1Point{range_check_ptr : felt}(x : felt, y : felt) -> (r: G1Point):
+
+    let X : Uint256 = getUint256(x)
+    let Y : Uint256 = getUint256(y)
+
+    return(G1Point(X,Y))
+
+end
+        
+#Creates a G2Point off of the received numbers : G2Point([a,b],[c,d])
+func BuildG2Point{range_check_ptr : felt}(a : felt, b : felt, c : felt, d : felt) -> (r : G2Point):
+
+    let (arr1 : Uint256*) = alloc()
+    let (arr2 : Uint256*) = alloc()
+
+    let A : Uint256 = getUint256(a)
+    assert arr1[0] = A
+
+    let B : Uint256 = getUint256(b)
+    assert arr1[1] = B
+
+    let C : Uint256 = getUint256(c)
+    assert arr2[0] = C
+        
+    let D : Uint256 = getUint256(d)
+    assert arr2[1] = D
+
+    return (G2Point(arr1, arr2))
+
+end
+
 
 #Start of Library Pairing
 
 	struct G1Point:
 
-		member X: felt
-		member Y: felt
+		member X: Uint256
+		member Y: Uint256
 	end
 
+    #Encoding of field elements is: X[0] * z + X[1]
 	struct G2Point:
 
-		member X: felt*
-		member Y: felt*
+		member X: Uint256*
+		member Y: Uint256*
 	end
 
 
 	#returns G1Point generator
 	func P1() -> (r : G1Point):
 	
-		return (G1Point(1, 2))
+		return (G1Point(Uint256(0,1), Uint256(0,2)))
 
 	end
 
 	#returns G2Point generator
 	func P2() -> (r : G2Point):
 
-		#TODO: find out why the new operator doesnt work
-		#let arr1 : felt* = new(11559732032986387107991004021392285783925812861821192530917403151452391805634,10857046999023057135944570762232829481370756359578518086990519993285655852781)
-
-		#let arr2: felt* = new(4082367875863433681332203403145435568316851327593401208105741076214120093531,8495653923123431417604973247489272438418190587263600148770280649306958101930)
-
-		let (arr1 : felt*) = alloc()
-        assert arr1[0] = 11559732032986387107991004021392285783925812861821192530917403151452391805634
-        assert arr1[1] = 10857046999023057135944570762232829481370756359578518086990519993285655852781
+		let (arr1 : Uint256*) = alloc()
+        assert arr1[0] = getUint256(11559732032986387107991004021392285783925812861821192530917403151452391805634)
+        assert arr1[1] = getUint256(10857046999023057135944570762232829481370756359578518086990519993285655852781)
         
         let(arr2 : felt*) = alloc()
-        assert arr2[0] = 4082367875863433681332203403145435568316851327593401208105741076214120093531
-        assert arr2[1] = 8495653923123431417604973247489272438418190587263600148770280649306958101930
+        assert arr2[0] = getUint256(4082367875863433681332203403145435568316851327593401208105741076214120093531)
+        assert arr2[1] = getUint256(8495653923123431417604973247489272438418190587263600148770280649306958101930)
         
 
 		return (G2Point(arr1, arr2))
@@ -55,42 +101,48 @@ from starkware.cairo.common.memcpy import memcpy
 	end
 
 	#returns negated G1Point{range_check_ptr}(addition of a G1Point and a negated G1Point should be zero)
-	func negate(p : G1Point) -> (r: G1Point):
+	func negate{range_check_ptr : felt}(p : G1Point) -> (r: G1Point):
+        alloc_locals
 
-		let q = 21888242871839275222246405745257275088696311157297823662689037894645226208583
+		let q : Uint256 = getUint256(21888242871839275222246405745257275088696311157297823662689037894645226208583)
 
-		#TODO: find out how to use &&
-		if p.X == 0 :
+        let comp_a : felt = uint256_eq(p.X, Uint256(0,0))
+		if comp_a == TRUE:
 
-			if p.Y == 0:
+            let comp_b : felt = uint256_eq(p.X, Uint256(0,0))
+			if comp_b == TRUE:
         
-            	return (G1Point(0, 0))
+            	return (G1Point(Uint256(0,0),Uint256(0,0)))
             end
         
         end
+        
+        let ( _ , local var) = uint256_unsigned_div_rem(p.Y, q)
+        let res : Uint256 = uint256_sub(q, var)
 
-       	#TODO: div (q) is out of valid range (too big), fix
-        let ( _ , var) = unsigned_div_rem(p.Y, q)
+        return (G1Point(p.X, res))
+end
 
-        return (G1Point(p.X, q - var))
+     #returns sum of two G1Point
+    func addition{range_check_ptr : felt}(p1 : G1Point, p2: G1Point) -> (r : G1Point):
+        alloc_locals
 
+        let q : Uint256 = getUint256(21888242871839275222246405745257275088696311157297823662689037894645226208583)
 
-    end
+        let x : Uint256 = uint256_sub(p1.X, p2.X)
+        let (var : Uint256, _ ) = uint256_add(p1.Y, p2.Y)
+        let y : Uint256 = uint256_unsigned_div_rem(var, q)
 
-    #returns sum of two G1Point
-    func addition(p1 : G1Point, p2: G2Point) -> (r : G1Point):
+        return(G1Point(x, y))
 
-    	let (input : felt*) = alloc()
-
-    	assert input[0] = p1.X
-    	assert input[1] = p2.X
-    	assert input[2] = p1.Y
-    	assert input[3] = p2.Y
-
-    	let success = ???
-
+        #THIS FUNCTION WORKS BUT ITS NOT COMPLETE
+    	#let (input : Uint256*) = alloc()
+    	#assert input[0] = p1.X
+    	#assert input[1] = p2.X
+    	#assert input[2] = p1.Y
+    	#assert input[3] = p2.Y
+    	#let success = ???
     	#TODO: investigate what the next block of code does
-
         #TODO: complete func
 
     end
@@ -206,30 +258,11 @@ from starkware.cairo.common.memcpy import memcpy
 
 	end
 
-    #auxiliary function used to create a G2Point off of the received numbers : G2Point([a,b],[c,d])
-    
-    func BuildG2Point(a : felt, b : felt,
-                      c : felt, d : felt) -> (r : G2Point):
-
-        #TODO: change syntax to using new operator if available
-
-        let (arr1 : felt*) = alloc()
-        let (arr2 : felt*) = alloc()
-
-        assert arr1[0] = a
-        assert arr1[1] = b
-        assert arr2[0] = c
-        assert arr2[1] = d
-
-        return (G2Point(arr1, arr2))
-
-    end
-
 	func verifyingKey() -> (vk : VerifyingKey):
 
 	#This is the part where the data is rendered
 
-	   let alfa1 : G1Point = G1Point(
+	   let alfa1 : G1Point = BuildG1Point(
             <%=vk_alpha_1[0]%>,
             <%=vk_alpha_1[1]%>
         )
@@ -256,7 +289,7 @@ from starkware.cairo.common.memcpy import memcpy
         
         let (IC : G1Point*) = alloc()
         <% for (let i=0; i<IC.length; i++) { %>
-        assert IC[<%=i%>] = G1Point( 
+        assert IC[<%=i%>] = BuildG1Point( 
             <%=IC[i][0]%>,
             <%=IC[i][1]%>
         )                                      
