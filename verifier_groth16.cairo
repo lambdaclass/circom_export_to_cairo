@@ -7,6 +7,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.uint256 import uint256_unsigned_div_rem
 from starkware.cairo.common.uint256 import uint256_eq
+from starkware.cairo.common.uint256 import uint256_lt
 from starkware.cairo.common.uint256 import uint256_sub
 from starkware.cairo.common.uint256 import uint256_add
 from starkware.cairo.common.uint256 import uint256_mul
@@ -14,18 +15,14 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.bool import TRUE
 from starkware.cairo.common.bool import FALSE
-#TODO: investigate library syntax
-#TODO: find out what I can use in cairo to replace libraries
-#TODO: learn more about starknet contracts
 
 
-#Auxiliary functions
+#Auxiliary functions (Builders)
 
 #Returns number as Uint256
 func getUint256{range_check_ptr}(number : felt) -> (r : Uint256):
 
     let (high : felt, low : felt) = split_felt(number)
-
     return(Uint256(low, high))
 
 end
@@ -33,8 +30,8 @@ end
 #Creates a G1Point off of the received numbers: G1Point(x,y)
 func BuildG1Point{range_check_ptr : felt}(x : felt, y : felt) -> (r: G1Point):
 
-         let p : G1Point = BuildG1Point(1,2)
-        return (p)
+    let p : G1Point = BuildG1Point(1,2)
+    return (p)
 
 end
         
@@ -95,7 +92,7 @@ end
 
 	end
 
-	#returns negated G1Point{range_check_ptr}(addition of a G1Point and a negated G1Point should be zero)
+	#returns negated G1Point(addition of a G1Point and a negated G1Point should be zero)
 	func negate{range_check_ptr : felt}(p : G1Point) -> (r: G1Point):
         alloc_locals
 
@@ -118,7 +115,7 @@ end
         return (G1Point(p.X, res))
 end
 
-     #returns sum of two G1Point
+    #returns sum of two G1Point
     func addition{range_check_ptr : felt}(p1 : G1Point, p2: G1Point) -> (r : G1Point):
         alloc_locals
 
@@ -130,22 +127,13 @@ end
 
         return(G1Point(x, y))
 
-        #Ignored previous template implementation and went by definition of addition (p + (-p) = p)
-    	#let (input : Uint256*) = alloc()
-    	#assert input[0] = p1.X
-    	#assert input[1] = p2.X
-    	#assert input[2] = p1.Y
-    	#assert input[3] = p2.Y
-    	#let success = ???
-    	#TODO: investigate what the next block of code does
-        #TODO: complete func
-
+         #Ignored previous template implementation and went by definition of addition (p + (-p) = p)
     end
 
     #returns the product of a G1Point p and a scalar s
-  func scalar_mu{range_check_ptr : felt}(p : G1Point, s : felt) -> (r : G1Point):
+    func scalar_mu{range_check_ptr : felt}(p : G1Point, s : felt) -> (r : G1Point):
 
-        assert_nn(s) #TODO check that this not a problem (felt size check)
+        assert_nn(s) 
         if s == 0 :
             return (G1Point(Uint256(0,0), Uint256(0,0)))
         end
@@ -158,32 +146,37 @@ end
             return(result)
         
         #Ignored previous template implementation and went by definition of scalar multiplication (2*p = p+p)
-    	#let (input : felt) = alloc()
-    	#assert input[0] = p.X
-    	#assert input[1] = p.Y
-    	#assert input[2] = s
-    	#TODO: investigate what the next block of code does
-        #TODO: complete func
 
     end
 
+    #Extracts each member of each point in the vectors' position and adds them to the input vector
+    func get_point_members{range_check_ptr : felt}( position : felt, p1 : G1Point*, p2 : G2Point*, length : felt)
+
+        input[position * 6 + 0] = p1[position].X
+        input[position * 6 + 1] = p1[position].Y
+        input[position * 6 + 2] = p2[position].X[0]
+        input[position * 6 + 3] = p2[position].X[1]
+        input[position * 6 + 4] = p2[position].Y[0]
+        input[position * 6 + 5] = p2[position].Y[1]
+        
+        if lengh != position:
+            get_point_members( position + 1, p1, p2, input, length)
+        end
+    end
 
     #returns the result of computing the pairing check
-    func pairing(p1 : G1Point*, p2: G2Point*) -> (r : felt):
+    func pairing{range_check_ptr : felt}(p1 : G1Point*, p2: G2Point*, length : felt) -> (r : felt):
+        assert_nn(length)
 
-        # Sum of everything should be 0
+        let (input : Uint256) = alloc()
+        get_point_members(0, p1, p2, input, length - 1)
 
-        #TODO: find out how to calculate the lengh of an array
-    	#TODO: investigate what the next block of code does
-        #TODO: complete func
+        #Incomplete
 
     end
 
-
-    #pairing chack for two pairs
-    #TODO: test once I have pairing ready
-    func pairingProd2(a1 : G1Point, a2 : G2Point, 
-    				  b1 : G1Point, b2 : G2Point) -> (r : felt)
+    #Pairing chack for two pairs
+    func pairingProd2(a1 : G1Point, a2 : G2Point, b1 : G1Point, b2 : G2Point) -> (r : felt):
 
     	let (p1 : G1Point*) = alloc()
     	let (p2 : G2Point*) = alloc()
@@ -194,15 +187,13 @@ end
     	assert p2[0] = a2
     	assert p2[1] = b2
 
-    	return (pairing(p1,p2))
+    	return (pairing(p1, p2, 2))
 
     end
 
-    #pairing check for three pairs
-    #TODO: test once I have pairing ready
-    func pairingProd3(a1 : G1Point, a2 : G2Point, 
-    				  b1 : G2Point, b2 : G2Point,
-    				  c1 : G1Point, c2 : G2Point) -> (r : felt)
+    #Pairing check for three pairs
+    func pairingProd3(a1 : G1Point, a2 : G2Point,  b1 : G2Point, b2 : G2Point,
+    				  c1 : G1Point, c2 : G2Point) -> (r : felt):
 
     	let (p1 : G1Point*) = alloc()
     	let (p2 : G2Point*) = alloc()
@@ -215,15 +206,13 @@ end
     	assert p2[1] = b2
     	assert p2[2] = c2
 
-    	return (pairing(p1, p2))
+    	return (pairing(p1, p2, 3))
     end
 
-    #pairing check for four pairs
-    #TODO: test once I have pairing ready
-    func pairingProd3(a1 : G1Point, a2 : G2Point, 
-    				  b1 : G2Point, b2 : G2Point,
-    				  c1 : G1Point, c2 : G2Point,
-    				  d1 : G1Point, d2 : G2Point) -> (r : felt)
+    #Pairing check for four pairs
+    func pairingProd4(a1 : G1Point, a2 : G2Point, b1 : G1Point, b2 : G2Point,
+    				  c1 : G1Point, c2 : G2Point, d1 : G1Point, d2 : G2Point) -> (r : felt):
+
     	let (p1 : G1Point*) = alloc()
     	let (p2 : G2Point*) = alloc()
 
@@ -237,13 +226,10 @@ end
     	assert p2[2] = c2
     	assert p2[3] = d2
 
-    	return (pairing(p1, p2))
+    	return (pairing(p1, p2, 4))
     end
 
-#TODO: Investigate contract syntax
-
 #Start of verifier Contract
-
 
 	struct VerifyingKey:
         
@@ -252,6 +238,7 @@ end
         member gamma2 : G2Point 
         member delta2 : G2Point 
         member IC : G1Point*
+        member IC_length : felt
 
     end
 
@@ -263,9 +250,8 @@ end
 
 	end
 
-	func verifyingKey() -> (vk : VerifyingKey):
-
-	#This is the part where the data is rendered
+	func verifyingKey{range_check_ptr : felt}() -> (vk : VerifyingKey):
+	#This is where the data is rendered
 
 	   let alfa1 : G1Point = BuildG1Point(
             <%=vk_alpha_1[0]%>,
@@ -294,52 +280,72 @@ end
         
         let (IC : G1Point*) = alloc()
         <% for (let i=0; i<IC.length; i++) { %>
-        assert IC[<%=i%>] = BuildG1Point( 
+        let point_<%=i%> : G1Point =  BuildG1Point( 
             <%=IC[i][0]%>,
-            <%=IC[i][1]%>
-        )                                      
+            <%=IC[i][1]%>)
+        assert IC[<%=i%>] =  point_<%=i%>                                   
         <% } %>
+        let IC_length : felt = <%=IC.length%> 
 
-        return(VerifyingKey(alfa1, beta2, gamma2, delta2, IC))
+        return(VerifyingKey(alfa1, beta2, gamma2, delta2, IC, IC_length))
 
 	end
+    
+    #Computes the linear combination for vk_x
+    func vk_x_linear_combination{range_check_ptr : felt]( vk_x : G1Point, input : felt*, position, length, IC : G1Point*) -> (result_vk_x : G1Point):
 
-    func verify(input : felt*, proof: Proof) -> (r : felt):
+        assert_nn(input[position])
 
-        let snark_scalar_field = 21888242871839275222246405745257275088548364400416034343698204186575808495617
+        let mul_result : G1Point = scalar_mu(IC[position + 1], input[position])
+        let new_vk_x : G1Point = addition(vk_x, mul_result)
 
-        let vk : VerifyingKey = verifyingKey()
+        if position != length:
 
-        #TODO: find out how to get the lengh of an array
-        #input vs IC lengh comparison
+            let result_vk_x : G1Point = vk_x_linear_combination( new_vk_x, input, position + 1, length,  IC)
+            return(result_vk_x)
 
-        #for loop 
-        #TODO: complete func
+        else:
+
+            return(new_vk_x)
+
+        end
 
     end
 
-    func verifyProof( a : felt*
-                      b : felt**
-                      c : felt*
-                      input : felt*) -> (r : felt):
+    func verify{range_check_ptr : felt}(input : felt*, proof: Proof) -> (r : felt):
+        alloc_locals
+        #let snark_scalar_field : Uint256 = getUint256(21888242871839275222246405745257275088548364400416034343698204186575808495617)
 
-        let proof : Proof = Proof(A = G1Point(a[0], a[1]),
-                                  B = BuildG2Point(b[0][0], b[0][1]
-                                                   b[1][0], b[1][1]),
-                                  C = G1Point(c[0], c[1]))
+        let vk : VerifyingKey = verifyingKey()
+        #length verification
 
-        let (inputValues : felt) = alloc()
+        #Compute the linear combination vk_x
+        let initial_vk_x : G1Point = BuildG1Point(0,0)
+        let computed_vk_x : G1Point = vk_x_linear_combination(initial_vk_x, input, 0, vk.IC_length - 1, vk.IC)
+
+        let vk_x : G1Point = addition(computed_vk_x, vk.IC[0])
+
+        let neg_proof_A : G1Point = negate(proof.A)
+        let result : felt = pairingProd4( neg_proof_A, proof.B , vk.alfa1, vk.beta2, vk_x, vk.gamma2, proof.C, vk.delta2)
+        return (result)
+
+    end
+
+    func verifyProof{range_check_ptr : felt}( a : Uint256*, b : Uint256*, c : Uint256*, input : felt*) -> (r : felt):
+        #Input is received as array of felts, changes needed if input values are larger than felt
+        let A : G1Point = BuildG1Point(a[0], a[1])
+        let B : G2Point = BuildG2Point(b[0][0], b[0][1], b[1][0], b[1][1])
+        let C : G1Point = BuildG1Point(c[0], c[1])
+       
+        let proof : Proof = Proof(A, B, C)
+
+        let (inputValues : Uint256) = alloc()
 
         memcpy(input, inputValues, <%IC.length%>)  
 
-        if(verify(inputValues, proof) == 0){
+        result : felt = (verify(inputValues, proof)
 
-            return(FALSE)
-
-        } else {
-
-            return(TRUE)
-        }
+        return(result)
 
     end
 
