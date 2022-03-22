@@ -16,8 +16,22 @@ from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.bool import TRUE
 from starkware.cairo.common.bool import FALSE
 
+#Start of Library Pairing
 
-#Auxiliary functions (Builders)
+	struct G1Point:
+
+		member X: Uint256
+		member Y: Uint256
+	end
+
+    #Encoding of field elements is: X[0] * z + X[1]
+	struct G2Point:
+
+		member X: Uint256*
+		member Y: Uint256*
+	end
+
+    #Auxiliary functions (Builders)
 
 #Returns number as Uint256
 func getUint256{range_check_ptr}(number : felt) -> (r : Uint256):
@@ -30,8 +44,10 @@ end
 #Creates a G1Point off of the received numbers: G1Point(x,y)
 func BuildG1Point{range_check_ptr : felt}(x : felt, y : felt) -> (r: G1Point):
 
-    let p : G1Point = BuildG1Point(1,2)
-    return (p)
+    let X : Uint256 = getUint256(x)
+    let Y : Uint256 = getUint256(y)
+
+    return (G1Point(X,Y))
 
 end
         
@@ -56,22 +72,6 @@ func BuildG2Point{range_check_ptr : felt}(a : felt, b : felt, c : felt, d : felt
     return (G2Point(arr1, arr2))
 
 end
-
-
-#Start of Library Pairing
-
-	struct G1Point:
-
-		member X: Uint256
-		member Y: Uint256
-	end
-
-    #Encoding of field elements is: X[0] * z + X[1]
-	struct G2Point:
-
-		member X: Uint256*
-		member Y: Uint256*
-	end
 
 
 	#returns G1Point generator
@@ -292,7 +292,7 @@ end
 	end
     
     #Computes the linear combination for vk_x
-    func vk_x_linear_combination{range_check_ptr : felt]( vk_x : G1Point, input : felt*, position, length, IC : G1Point*) -> (result_vk_x : G1Point):
+    func vk_x_linear_combination{range_check_ptr : felt}( vk_x : G1Point, input : felt*, position, length, IC : G1Point*) -> (result_vk_x : G1Point):
 
         assert_nn(input[position])
 
@@ -314,7 +314,6 @@ end
 
     func verify{range_check_ptr : felt}(input : felt*, proof: Proof) -> (r : felt):
         alloc_locals
-        #let snark_scalar_field : Uint256 = getUint256(21888242871839275222246405745257275088548364400416034343698204186575808495617)
 
         let vk : VerifyingKey = verifyingKey()
         #length verification
@@ -331,8 +330,8 @@ end
 
     end
 
-    func verifyProof{range_check_ptr : felt}( a : Uint256*, b : Uint256*, c : Uint256*, input : felt*) -> (r : felt):
-        #Input is received as array of felts, changes needed if input values are larger than felt
+    func verifyProof{range_check_ptr : felt}( a : felt*, b : felt**, c : felt*, input : felt*) -> (r : felt):
+        #Input is used as array of felts, changes needed if input values are larger than felt
         let A : G1Point = BuildG1Point(a[0], a[1])
         let B : G2Point = BuildG2Point(b[0][0], b[0][1], b[1][0], b[1][1])
         let C : G1Point = BuildG1Point(c[0], c[1])
@@ -343,7 +342,7 @@ end
 
         memcpy(input, inputValues, <%IC.length%>)  
 
-        result : felt = (verify(inputValues, proof)
+        let result : felt = verify(inputValues, proof)
 
         return(result)
 
