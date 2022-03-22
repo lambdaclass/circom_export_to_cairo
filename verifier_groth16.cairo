@@ -75,9 +75,10 @@ end
 
 
 	#returns G1Point generator
-	func P1() -> (r : G1Point):
-	
-		return (G1Point(Uint256(0,1), Uint256(0,2)))
+	func P1{range_check_ptr : felt} () -> (r : G1Point):
+
+            let p : G1Point = BuildG1Point(1,2)
+		return(p)
 
 	end
 
@@ -176,7 +177,7 @@ end
     end
 
     #Pairing chack for two pairs
-    func pairingProd2(a1 : G1Point, a2 : G2Point, b1 : G1Point, b2 : G2Point) -> (r : felt):
+    func pairingProd2{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point, b1 : G1Point, b2 : G2Point) -> (r : felt):
 
     	let (p1 : G1Point*) = alloc()
     	let (p2 : G2Point*) = alloc()
@@ -187,12 +188,13 @@ end
     	assert p2[0] = a2
     	assert p2[1] = b2
 
-    	return (pairing(p1, p2, 2))
+    	let result : felt = pairing(p1,p2,2)
+    	return (result)
 
     end
 
     #Pairing check for three pairs
-    func pairingProd3(a1 : G1Point, a2 : G2Point,  b1 : G2Point, b2 : G2Point,
+    func pairingProd3{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point,  b1 : G2Point, b2 : G2Point,
     				  c1 : G1Point, c2 : G2Point) -> (r : felt):
 
     	let (p1 : G1Point*) = alloc()
@@ -206,11 +208,12 @@ end
     	assert p2[1] = b2
     	assert p2[2] = c2
 
-    	return (pairing(p1, p2, 3))
+    	let result : felt = pairing(p1,p2,3)
+    	return (result)
     end
 
     #Pairing check for four pairs
-    func pairingProd4(a1 : G1Point, a2 : G2Point, b1 : G1Point, b2 : G2Point,
+    func pairingProd4{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point, b1 : G1Point, b2 : G2Point,
     				  c1 : G1Point, c2 : G2Point, d1 : G1Point, d2 : G2Point) -> (r : felt):
 
     	let (p1 : G1Point*) = alloc()
@@ -226,7 +229,8 @@ end
     	assert p2[2] = c2
     	assert p2[3] = d2
 
-    	return (pairing(p1, p2, 4))
+    	let result : felt = pairing(p1,p2,4)
+    	return (result)
     end
 
 #Start of verifier Contract
@@ -338,11 +342,7 @@ end
        
         let proof : Proof = Proof(A, B, C)
 
-        let (inputValues : Uint256) = alloc()
-
-        memcpy(input, inputValues, <%IC.length%>)  
-
-        let result : felt = verify(inputValues, proof)
+        let result : felt = verify(input, proof)
 
         return(result)
 
