@@ -1,12 +1,9 @@
 FROM debian
 
-RUN apt update && apt upgrade -y
-RUN apt install -y python 
-RUN apt install -y pip 
-RUN apt install -y libgmp3-dev
-RUN pip3 install cairo-lang
-RUN apt install npm -y
-RUN npm install -g snarkjs
+RUN apt update && apt upgrade -y && \
+    apt install -y python libgmp3-dev npm pip && \
+    pip3 install cairo-lang && \
+    npm install -g snarkjs
 
 COPY verifier_groth16.cairo  /home
 COPY playground.cairo  /home
