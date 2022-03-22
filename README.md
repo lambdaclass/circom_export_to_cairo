@@ -23,7 +23,7 @@ snarkjs zkey export solidityverifier [name of your key].zkey [nme of the verifie
 
 What we can do with this is change the name of our cairo template to verifier_groth16.sol.ejs and use it ro replace the original file in snarkjs/templates, so that a "CairoVerifier" is produced instead of a Solidity one.
 
-The Makefile has a shortcut "generate_verifier" that will copy our template into the templates folder and generate a verifier from the example zkey provided (example_001.zkey)
+The Makefile has a target called "generate_verifier" that will copy our template into the templates folder and generate a verifier from the example zkey provided (example_001.zkey)
 
 ### How to test this process in a Docker container
 
