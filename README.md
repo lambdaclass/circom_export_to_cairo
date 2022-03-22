@@ -1,4 +1,4 @@
-# Starkware
+# Circom export to Cairo
 
 Diagram of ZK-SNARK and ZK-STARK flux:
 
@@ -13,11 +13,13 @@ This Repository contains the following:
 - Dockerfile used to create a docker image with everything ready to compile and run cairo code, and generate a verifier through snarkjs
 - example_001.zkey, a validation key generated though circom from a basic circuit
 
-## (Current)Instructions to use the cairo template
+## Instructions to use the cairo template
 
-First write and compile a circuit and compute the witness through circom, then generate a validation key through snarkjs (this process is properly explained at https://docs.circom.io/getting-started/installation/), this will yield a .zkey, which we can use to generate a solidity verifier through the command: 
+First write and compile a circuit and compute the witness through circom, then generate a validation key through snarkjs (this process is properly explained at https://docs.circom.io/getting-started/installation/), this will yield a .zkey, which we can use to generate a solidity verifier through the command:
 
+``` bash
 snarkjs zkey export solidityverifier [name of your key].zkey [nme of the verifier produced]
+```
 
 What we can do with this is change the name of our cairo template to verifier_groth16.sol.ejs and use it ro replace the original file in snarkjs/templates, so that a "CairoVerifier" is produced instead of a Solidity one.
 
