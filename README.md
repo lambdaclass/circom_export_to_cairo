@@ -23,6 +23,24 @@ What we can do with this is change the name of our cairo template to verifier_gr
 
 The Makefile has a shortcut "generate_verifier" that will copy our template into the templates folder and generate a verifier from the example zkey provided (example_001.zkey)
 
+### How to test this process in a Docker container
+
+* Create a docker container with the compiler and all the requirements:
+``` bash
+docker build -t circomtest .
+```
+* Log into the container created:
+``` bash
+docker run -it --rm circomtest bash
+```
+the prompt will be located at the `/home` directory. The file `verifier_groth16.cairo` is the template file that generates Cairo code. The provided commands are written in the `Makefile`.
+* To run the generation of the verifier:
+``` bash
+make generate_verifier
+```
+it generates the file `verifier.cairo`.
+
+If you want to test this process without docker, you should put the template file (`verifier_groth16.cairo`) in the same directory that npm puts the program files (`npm root -g` shows that directory).
 
 ## Main doubts/Problems with this solution
 
