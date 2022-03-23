@@ -16,9 +16,6 @@ from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.bool import TRUE
 from starkware.cairo.common.bool import FALSE
 
-
-
-
 #Start of Library Pairing
 
 	struct G1Point:
@@ -36,47 +33,45 @@ from starkware.cairo.common.bool import FALSE
 
     #Auxiliary functions (Builders)
 
-#Returns number as Uint256
-func getUint256{range_check_ptr}(number : felt) -> (r : Uint256):
+    #Returns number as Uint256
+    func getUint256{range_check_ptr}(number : felt) -> (r : Uint256):
 
-    let (high : felt, low : felt) = split_felt(number)
-    return(Uint256(low, high))
+        let (high : felt, low : felt) = split_felt(number)
+        return(Uint256(low, high))
 
-end
+    end
 
-#Creates a G1Point off of the received numbers: G1Point(x,y)
-func BuildG1Point{range_check_ptr : felt}(x : felt, y : felt) -> (r: G1Point):
+    #Creates a G1Point off of the received numbers: G1Point(x,y)
+    func BuildG1Point{range_check_ptr : felt}(x : felt, y : felt) -> (r: G1Point):
 
-    let X : Uint256 = getUint256(x)
-    let Y : Uint256 = getUint256(y)
+        let X : Uint256 = getUint256(x)
+        let Y : Uint256 = getUint256(y)
 
-    return (G1Point(X,Y))
+        return (G1Point(X,Y))
 
-end
+    end
         
-#Creates a G2Point off of the received numbers : G2Point([a,b],[c,d])
-func BuildG2Point{range_check_ptr : felt}(a : felt, b : felt, c : felt, d : felt) -> (r : G2Point):
+    #Creates a G2Point off of the received numbers : G2Point([a,b],[c,d])
+    func BuildG2Point{range_check_ptr : felt}(a : felt, b : felt, c : felt, d : felt) -> (r : G2Point):
 
-    let (arr1 : Uint256*) = alloc()
-    let (arr2 : Uint256*) = alloc()
+        let (arr1 : Uint256*) = alloc()
+        let (arr2 : Uint256*) = alloc()
 
-    let A : Uint256 = getUint256(a)
-    assert arr1[0] = A
+        let A : Uint256 = getUint256(a)
+        assert arr1[0] = A
 
-    let B : Uint256 = getUint256(b)
-    assert arr1[1] = B
+        let B : Uint256 = getUint256(b)
+        assert arr1[1] = B
 
-    let C : Uint256 = getUint256(c)
-    assert arr2[0] = C
+        let C : Uint256 = getUint256(c)
+        assert arr2[0] = C
         
-    let D : Uint256 = getUint256(d)
-    assert arr2[1] = D
+        let D : Uint256 = getUint256(d)
+        assert arr2[1] = D
 
-    return (G2Point(arr1, arr2))
+        return (G2Point(arr1, arr2))
 
-end
-
-
+    end
 
 	#returns G1Point generator
 	func P1{range_check_ptr : felt}()-> (r : G1Point):
@@ -118,7 +113,7 @@ end
         let res : Uint256 = uint256_sub(q, var)
 
         return (G1Point(p.X, res))
-end
+    end
 
     #returns sum of two G1Point
     func addition{range_check_ptr : felt}(p1 : G1Point, p2: G1Point) -> (r : G1Point):
@@ -154,7 +149,6 @@ end
 
     end
 
-
      struct VerifyingKey:
 		
 		member alfa1 : G1Point		
@@ -174,9 +168,7 @@ end
 
 	end
 
-
-
-     #Pairing check for four pairs
+    #Pairing check for four pairs
     func pairingProd4{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point, b1 : G1Point, b2 : G2Point,
     				  c1 : G1Point, c2 : G2Point, d1 : G1Point, d2 : G2Point) -> (r : felt):
 
@@ -197,13 +189,13 @@ end
     	return (result)
     end
 
- func verifyingKey{range_check_ptr : felt}() -> (vk : VerifyingKey):
+    func verifyingKey{range_check_ptr : felt}() -> (vk : VerifyingKey):
 
-    #TODO: test this in playground
+        #TODO: test this in playground
 
-	#This is the part where the data is rendered
+	    #This is the part where the data is rendered
 
-	   let alfa1 : G1Point = BuildG1Point(
+	    let alfa1 : G1Point = BuildG1Point(
             15184750631765204772480521349862262831514812045327221339726366914554701999092,
             19044554880208243253309357165951370053763172816922293672982938597144512700803
         )

@@ -122,7 +122,10 @@ end
 
         let q : Uint256 = getUint256(21888242871839275222246405745257275088696311157297823662689037894645226208583)
 
-        let x : Uint256 = uint256_sub(p1.X, p2.X)
+        let (add_x : Uint256, _ ) = uint256_add(q ,p1.X)
+        let sub_x : Uint256 = uint256_sub(add_x , p2.X)
+        let x : Uint256 = uint256_unsigned_div_rem(sub_x, q)
+        
         let (var : Uint256, _ ) = uint256_add(p1.Y, p2.Y)
         let y : Uint256 = uint256_unsigned_div_rem(var, q)
 
@@ -151,14 +154,14 @@ end
     end
 
     #Extracts each member of each point in the vectors' position and adds them to the input vector
-    func get_point_members{range_check_ptr : felt}( position : felt, p1 : G1Point*, p2 : G2Point*, length : felt)
+    func get_point_members{range_check_ptr : felt}( position : felt, p1 : G1Point*, p2 : G2Point*, length : felt):
 
-        input[position * 6 + 0] = p1[position].X
-        input[position * 6 + 1] = p1[position].Y
-        input[position * 6 + 2] = p2[position].X[0]
-        input[position * 6 + 3] = p2[position].X[1]
-        input[position * 6 + 4] = p2[position].Y[0]
-        input[position * 6 + 5] = p2[position].Y[1]
+        assert input[position * 6 + 0] = p1[position].X
+        assert input[position * 6 + 1] = p1[position].Y
+        assert input[position * 6 + 2] = p2[position].X[0]
+        assert input[position * 6 + 3] = p2[position].X[1]
+        assert input[position * 6 + 4] = p2[position].Y[0]
+        assert input[position * 6 + 5] = p2[position].Y[1]
         
         if lengh != position:
             get_point_members( position + 1, p1, p2, input, length)
@@ -347,16 +350,3 @@ end
         return(result)
 
     end
-
-
-
-
-
-
-
-
-
-
-
-
-

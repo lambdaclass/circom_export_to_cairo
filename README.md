@@ -5,6 +5,41 @@
 
 The numbers provided by the zkey are too big for the cairo program (Cairo language cant support such numbers, which leads to output being truncated, and incompatibility with math library functions). These numbers come from the R1CS, which defines a set of equations modulo p, where F_p is the field where the values of the arithmetic circuit reside. This makes me question wether the approach of making a cairo template is correct, as the original template is based off of the groth16 protocol, for ZK-SNARK proofs, while Cairo was designed to be used with the STARK protocol. This makes me question where does my "cairo verifier" fit into the diagram, and "who", would verify it.
 
+### Problems concerning solidity template
+On the functions addition, scalar_mu and pairing, there is a block of Yul code, which is not very descriptive .This makes "translating" these functions to cairo seemingly impossible, as we cant understand what they do. It is possible to understand some of them from context, such as addition and scalar_mu, but for the pairing function there is no practical way to replicate it without knowing how the function works:
+
+```solidity
+/// @return the result of computing the pairing check
+    /// e(p1[0], p2[0]) *  .... * e(p1[n], p2[n]) == 1
+    /// For example pairing([P1(), P1().negate()], [P2(), P2()]) should
+    /// return true.
+    function pairing(G1Point[] memory p1, G2Point[] memory p2) internal view returns (bool) {
+        require(p1.length == p2.length,"pairing-lengths-failed");
+        uint elements = p1.length;
+        uint inputSize = elements * 6;
+        uint[] memory input = new uint[](inputSize);
+        for (uint i = 0; i < elements; i++)
+        {
+            input[i * 6 + 0] = p1[i].X;
+            input[i * 6 + 1] = p1[i].Y;
+            input[i * 6 + 2] = p2[i].X[0];
+            input[i * 6 + 3] = p2[i].X[1];
+            input[i * 6 + 4] = p2[i].Y[0];
+            input[i * 6 + 5] = p2[i].Y[1];
+        }
+        uint[1] memory out;
+        bool success;
+        // solium-disable-next-line security/no-inline-assembly
+        assembly {
+            success := staticcall(sub(gas(), 2000), 8, add(input, 0x20), mul(inputSize, 0x20), out, 0x20)
+            // Use "invalid" to make gas estimation work
+            switch success case 0 { invalid() }
+        }
+        require(success,"pairing-opcode-failed");
+        return out[0] != 0;
+    }
+```
+
 ## Diagram
 
 ![Flux-Diagram](Flux-Diagram.drawio.png "Flux-Diagram")

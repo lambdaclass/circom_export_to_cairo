@@ -1,3 +1,8 @@
+PHONY: docker, compile, run, clean , generate_verifier, make_verifier, replace_template
+
+docker: Dockerfile
+
+	docker build -t circomtest .
 
 compile: playground.cairo
 
@@ -12,10 +17,7 @@ clean : playground-compiled.json
 
 	rm playground-compiled.json
 
-
-
 #Generates a cairo verifier by replacing the original template
-
 generate_verifier : replace_template make_verifier
 
 replace_template: verifier_groth16.cairo 
@@ -26,4 +28,3 @@ replace_template: verifier_groth16.cairo
 make_verifier: example_0001.zkey
 
 	snarkjs zkey export solidityverifier example_0001.zkey verifier.cairo
-
