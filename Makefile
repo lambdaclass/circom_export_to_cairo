@@ -1,4 +1,4 @@
-PHONY: docker, compile, run, clean , generate_verifier, make_verifier, replace_template
+PHONY: docker-build, docker-run, compile, run, clean ,generate_verifier, make_verifier, replace_template
 
 docker-build: Dockerfile
 
@@ -15,7 +15,8 @@ compile: playground.cairo
 run: playground-compiled.json
 
 	cairo-run \
-  --program=playground-compiled.json --print_output --print_info --relocate_prints --layout=small
+  		--program=playground-compiled.json --print_output \
+			--print_info --relocate_prints --layout=small
 
 clean : playground-compiled.json
 
