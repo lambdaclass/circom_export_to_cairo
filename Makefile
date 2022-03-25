@@ -16,7 +16,7 @@ run: playground-compiled.json
 
 	cairo-run \
   		--program=playground-compiled.json --print_output \
-			--print_info --relocate_prints --layout=small
+		--print_info --relocate_prints --layout=small
 
 clean : playground-compiled.json
 
