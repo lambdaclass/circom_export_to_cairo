@@ -1,8 +1,12 @@
 PHONY: docker, compile, run, clean , generate_verifier, make_verifier, replace_template
 
-docker: Dockerfile
+docker-build: Dockerfile
 
 	docker build -t circomtest .
+
+docker-run: Dockerfile
+
+	docker run -i circomtest
 
 compile: playground.cairo
 
