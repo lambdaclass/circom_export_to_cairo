@@ -64,8 +64,7 @@ func BuildG2Point{range_check_ptr : felt}(a : felt, b : felt, c : felt, d : felt
 end
 
 #Returns negated BigInt3
-func negate_BigInt3(n : BigInt3) -> (r : BigInt3):
-
+func negateBigInt3(n : BigInt3) -> (r : BigInt3):
     let d0 = -n.d0
     let d1 = -n.d1
     let d2 = -n.d2
@@ -77,17 +76,16 @@ end
 #Returns negated G1Point(addition of a G1Point and a negated G1Point should be zero)
 func negate{range_check_ptr : felt}(p : G1Point) -> (r: G1Point):
     alloc_locals
-
-    let comp_a : felt = is_zero(p.x)
-	if comp_a == TRUE:
-        let comp_b : felt = is_zero(p.y)
-		if comp_b == TRUE:
+    let x_is_zero : felt = is_zero(p.x)
+	if x_is_zero == TRUE:
+        let y_is_zero : felt = is_zero(p.y)
+		if y_is_zero == TRUE:
             return (G1Point(BigInt3(0,0,0),BigInt3(0,0,0)))
         end
     end
 
-    let Y : BigInt3 = negate_BigInt3(p.y)
-    return (G1Point(p.x, Y))
+    let neg_y : BigInt3 = negateBigInt3(p.y)
+    return (G1Point(p.x, neg_y))
 end
 
 #Computes the pairing for each pair of points in p1 and p2, and returns each result as an FQ12 in pairing_results
@@ -96,8 +94,7 @@ func compute_pairings{range_check_ptr : felt}(p1 : G1Point*, p2 : G2Point*, pair
         let result : FQ12 = pairing(p2[position], p1[position])
         assert pairing_results[position] = result
 
-        compute_pairings(p1,p2,pairing_results,position+1,lengh)
-        return()
+       return compute_pairings(p1,p2,pairing_results,position+1,lengh)
     end
     return()
  end
@@ -122,8 +119,7 @@ func pairingProd2{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point, b1 : G1Poi
     assert p2[0] = a2
     assert p2[1] = b2
 
-    let result : felt = pairings(p1,p2,2)
-    return (result)
+    return pairings(p1,p2,2)
 
 end
 
@@ -140,8 +136,7 @@ func pairingProd3{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point,  b1 : G1Po
     assert p2[1] = b2
     assert p2[2] = c2
 
-    let result : felt = pairings(p1,p2,3)
-    return (result)
+    return pairings(p1,p2,3)
 
 end
 
@@ -160,8 +155,7 @@ func pairingProd4{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point, b1 : G1Poi
     assert p2[2] = c2
     assert p2[3] = d2
 
-    let result : felt = pairings(p1,p2,4)
-    return (result)
+    return pairings(p1,p2,4)
 
 end
 
@@ -211,9 +205,7 @@ func vk_x_linear_combination{range_check_ptr : felt}( vk_x : G1Point, input : Bi
     let add_result : G1Point = ec_add(vk_x, mul_result)
 
     if position != length:
-        let result_vk_x : G1Point = vk_x_linear_combination( add_result, input, position + 1, length,  IC)
-        return(result_vk_x)
-
+        return vk_x_linear_combination(add_result, input, position + 1, length,  IC)
     else:
             return(add_result)
     end
@@ -228,8 +220,7 @@ func verify{range_check_ptr : felt}(input : BigInt3*, proof: Proof) -> (r : felt
     let vk_x : G1Point = ec_add(computed_vk_x, vk.IC[0])
 
     let neg_proof_A : G1Point = negate(proof.A)
-    let result : felt = pairingProd4( neg_proof_A, proof.B , vk.alfa1, vk.beta2, vk_x, vk.gamma2, proof.C, vk.delta2)
-    return (result)
+    return pairingProd4(neg_proof_A, proof.B , vk.alfa1, vk.beta2, vk_x, vk.gamma2, proof.C, vk.delta2)
 
 end
 
@@ -245,19 +236,17 @@ func getBigInt3array{range_check_ptr : felt}(input : felt*, output : BigInt3*, p
     return()
 end
 
-func verifyProof{range_check_ptr : felt}( a_len : felt, a : felt*, b_len : felt, b : felt**,c_len : felt, c : felt*, input_len : felt, input : felt*) -> (r : felt):
+func verifyProof{range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt, b1 : felt*, b2_len : felt, b2 : felt*,
+                                         c_len : felt, c : felt*, input_len : felt, input : felt*) -> (r : felt):
     alloc_locals
     let A : G1Point = BuildG1Point(a[0], a[1])
-    let B : G2Point = BuildG2Point(b[0][0], b[0][1], b[1][0], b[1][1])
+    let B : G2Point = BuildG2Point(b1[0], b1[1], b2[0], b2[1])
     let C : G1Point = BuildG1Point(c[0], c[1])
 
     let (big_input : BigInt3*) = alloc()
     getBigInt3array(input, big_input, 0, input_len)
 
     let proof : Proof = Proof(A, B, C)
-
-    let result : felt = verify(big_input, proof)
-
-     return(result)
+    return verify(big_input, proof)
 
 end
