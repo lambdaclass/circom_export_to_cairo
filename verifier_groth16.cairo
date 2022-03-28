@@ -88,24 +88,29 @@ func negate{range_check_ptr : felt}(p : G1Point) -> (r: G1Point):
     return (G1Point(p.x, neg_y))
 end
 
-#Computes the pairing for each pair of points in p1 and p2, and returns each result as an FQ12 in pairing_results
-func compute_pairings{range_check_ptr : felt}(p1 : G1Point*, p2 : G2Point*, pairing_results : FQ12*, position : felt, lengh : felt):
-    if position != lengh:
-        let result : FQ12 = pairing(p2[position], p1[position])
-        assert pairing_results[position] = result
+#Computes the pairing for each pair of points in p1 and p2, multiplies each new result and returns the final result
+#pairing_result should iniially be an fq12_one
+func compute_pairings{range_check_ptr : felt}(p1 : G1Point*, p2 : G2Point*, pairing_result : FQ12, position : felt, lengh : felt) -> (result : FQ12):
+        if position != lengh:
+            let current_pairing_result : FQ12 = pairing(p2[position], p1[position])
+            let mul_result : FQ12 = fq12_mul(pairing_result, current_pairing_result) 
 
-       return compute_pairings(p1,p2,pairing_results,position+1,lengh)
+            return compute_pairings(p1,p2,mul_result,position+1,lengh)
+        end
+        return(pairing_result)
     end
-    return()
- end
 
 #Returns the result of computing the pairing check
 func pairings{range_check_ptr : felt}(p1 : G1Point*, p2: G2Point*, length : felt) -> (r : felt):
      assert_nn(length)
+     alloc_locals
+    let initial_result : FQ12 = fq12_one()
+    let pairing_result : FQ12 = compute_pairings(p1,p2,initial_result,0,length)
 
-    let (pairing_results : FQ12*) = alloc()
-    compute_pairings(p1,p2,pairing_results,0,length)
-    #Incomplete
+    let one : FQ12 = fq12_one()
+    let diff : FQ12 = fq12_diff(pairing_result, one)
+    let result : felt = fq12_eq_zero(diff)
+    return(result)
  end
 
 #Pairing check for two pairs
