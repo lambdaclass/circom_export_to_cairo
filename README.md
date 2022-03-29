@@ -153,11 +153,11 @@ The Makefile has a target called "generate_verifier" that will copy our template
 
 * Create a docker container with the compiler and all the requirements:
 ``` bash
-docker build -t circomtest .
+make docker-build
 ```
 * Log into the container created:
 ``` bash
-docker run -it --rm circomtest bash
+make docker-run
 ```
 the prompt will be located at the `/home` directory. The file `verifier_groth16.cairo` is the template file that generates Cairo code. The provided commands are written in the `Makefile`.
 * To run the generation of the verifier:
