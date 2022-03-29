@@ -42,6 +42,79 @@ On the functions addition, scalar_mu and pairing, there is a block of Yul code, 
     }
 ```
 
+## On how the problem with the pairing function was solved
+
+After reading the contract that is called by the pairing function on the solidity template, and going through the libraries it uses I found how the pairing check is made:
+(On go-ethereum/core/vm/contracts.go)
+```go=
+func (c *bn256Pairing) Run(input []byte) ([]byte, error) {
+	// Handle some corner cases cheaply
+	if len(input)%192 > 0 {
+		return nil, errBadPairingInput
+	}
+	// Convert the input into a set of coordinates
+	var (
+		cs []*bn256.G1
+		ts []*bn256.G2
+	)
+	for i := 0; i < len(input); i += 192 {
+		c, err := newCurvePoint(input[i : i+64])
+		if err != nil {
+			return nil, err
+		}
+		t, err := newTwistPoint(input[i+64 : i+192])
+		if err != nil {
+			return nil, err
+		}
+		cs = append(cs, c)
+		ts = append(ts, t)
+	}
+	// Execute the pairing checks and return the results
+	if bn256.PairingCheck(cs, ts) {
+		return true32Byte, nil
+	}
+	return false32Byte, nil
+}
+```
+(On go-ethereum/crypto/bn256/cloudflare/bn256.go)
+```go=
+// PairingCheck calculates the Optimal Ate pairing for a set of points.
+func PairingCheck(a []*G1, b []*G2) bool {
+	acc := new(gfP12)
+	acc.SetOne()
+
+	for i := 0; i < len(a); i++ {
+		if a[i].p.IsInfinity() || b[i].p.IsInfinity() {
+			continue
+		}
+		acc.Mul(acc, miller(b[i].p, a[i].p))
+	}
+	return finalExponentiation(acc).IsOne()
+}
+```
+This behaves similarly to the pairing function on the cairo-alt_bn128 library:
+```cairo=
+func pairing{range_check_ptr}(Q : G2Point, P : G1Point) -> (res : FQ12):
+    alloc_locals
+    let (local twisted_Q : GTPoint) = twist(Q)
+    let (local f : FQ12) = fq12_one()
+    let (cast_P : GTPoint) = g1_to_gt(P)
+    return miller_loop(Q=twisted_Q, P=cast_P, R=twisted_Q, n=log_ate_loop_count + 1, f=f)
+end
+```
+But the difference lies in the last two lines:
+```go=
+acc.Mul(acc, miller(b[i].p, a[i].p))
+	}
+	return finalExponentiation(acc).IsOne()
+```
+Where we can see that the results of the miller loop are multiplied against the previous one and stored in acc.
+And then the final result is compared to one. This also coincides with the comment of top of the pairing function on the solidity template:
+```solidity=
+ /// e(p1[0], p2[0]) *  .... * e(p1[n], p2[n]) == 1
+ ```
+ This is also shown on the pairing_test function on cairo-alt_bn128/alt_bn128_example.cairo, where p1 and p2, and -p1 and p2 are paired, and their pairing results are multiplied and shown to result in the FQ12 one (That is to say 1, followed by 11 zeroes)
+
 ## Diagram
 
 ![Flux-Diagram](Flux-Diagram.drawio.png "Flux-Diagram")
