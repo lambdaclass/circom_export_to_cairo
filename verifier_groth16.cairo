@@ -8,7 +8,7 @@ from starkware.cairo.common.alloc import alloc
 from alt_bn128_g1 import G1Point, g1, ec_add, ec_mul
 from alt_bn128_g2 import G2Point, g2
 from alt_bn128_pair import pairing
-from alt_bn128_field import FQ12, is_zero, FQ2
+from alt_bn128_field import FQ12, is_zero, FQ2, fq12_diff, fq12_eq_zero, fq12_mul, fq12_one
 from bigint import BigInt3, BASE
 
 struct VerifyingKey:
@@ -95,15 +95,15 @@ func compute_pairings{range_check_ptr : felt}(p1 : G1Point*, p2 : G2Point*, pair
             let current_pairing_result : FQ12 = pairing(p2[position], p1[position])
             let mul_result : FQ12 = fq12_mul(pairing_result, current_pairing_result) 
 
-            return compute_pairings(p1,p2,mul_result,position+1,lengh)
+            return compute_pairings(p1, p2,mul_result, position+1, lengh)
         end
         return(pairing_result)
     end
 
 #Returns the result of computing the pairing check
 func pairings{range_check_ptr : felt}(p1 : G1Point*, p2: G2Point*, length : felt) -> (r : felt):
-     assert_nn(length)
-     alloc_locals
+    alloc_locals
+    assert_nn(length)
     let initial_result : FQ12 = fq12_one()
     let pairing_result : FQ12 = compute_pairings(p1,p2,initial_result,0,length)
 
