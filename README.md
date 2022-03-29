@@ -46,7 +46,8 @@ On the functions addition, scalar_mu and pairing, there is a block of Yul code, 
 
 After reading the contract that is called by the pairing function on the solidity template, and going through the libraries it uses I found how the pairing check is made:
 (On go-ethereum/core/vm/contracts.go)
-```go=
+
+``` go
 func (c *bn256Pairing) Run(input []byte) ([]byte, error) {
 	// Handle some corner cases cheaply
 	if len(input)%192 > 0 {
@@ -76,8 +77,10 @@ func (c *bn256Pairing) Run(input []byte) ([]byte, error) {
 	return false32Byte, nil
 }
 ```
+
 (On go-ethereum/crypto/bn256/cloudflare/bn256.go)
-```go=
+
+``` go
 // PairingCheck calculates the Optimal Ate pairing for a set of points.
 func PairingCheck(a []*G1, b []*G2) bool {
 	acc := new(gfP12)
@@ -92,8 +95,10 @@ func PairingCheck(a []*G1, b []*G2) bool {
 	return finalExponentiation(acc).IsOne()
 }
 ```
+
 This behaves similarly to the pairing function on the cairo-alt_bn128 library:
-```cairo=
+
+``` cairo
 func pairing{range_check_ptr}(Q : G2Point, P : G1Point) -> (res : FQ12):
     alloc_locals
     let (local twisted_Q : GTPoint) = twist(Q)
@@ -102,17 +107,21 @@ func pairing{range_check_ptr}(Q : G2Point, P : G1Point) -> (res : FQ12):
     return miller_loop(Q=twisted_Q, P=cast_P, R=twisted_Q, n=log_ate_loop_count + 1, f=f)
 end
 ```
+
 But the difference lies in the last two lines:
-```go=
+
+``` go
 acc.Mul(acc, miller(b[i].p, a[i].p))
 	}
 	return finalExponentiation(acc).IsOne()
 ```
 Where we can see that the results of the miller loop are multiplied against the previous one and stored in acc.
 And then the final result is compared to one. This also coincides with the comment of top of the pairing function on the solidity template:
-```solidity=
+
+``` solidity
  /// e(p1[0], p2[0]) *  .... * e(p1[n], p2[n]) == 1
  ```
+ 
  This is also shown on the pairing_test function on cairo-alt_bn128/alt_bn128_example.cairo, where p1 and p2, and -p1 and p2 are paired, and their pairing results are multiplied and shown to result in the FQ12 one (That is to say 1, followed by 11 zeroes)
 
 ## Diagram
