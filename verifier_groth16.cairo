@@ -1,7 +1,6 @@
 #This is a template for cairo based on verifier_groth16.sol.ejs on snarkjs/templates
 %builtins range_check 
 
-from starkware.cairo.common.math_cmp import RC_BOUND
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.math import assert_nn, split_int
 from starkware.cairo.common.alloc import alloc
@@ -9,7 +8,7 @@ from alt_bn128_g1 import G1Point, g1, ec_add, ec_mul
 from alt_bn128_g2 import G2Point, g2
 from alt_bn128_pair import pairing
 from alt_bn128_field import FQ12, is_zero, FQ2, fq12_diff, fq12_eq_zero, fq12_mul, fq12_one
-from bigint import BigInt3, BASE
+from bigint import BigInt3
 
 struct VerifyingKey:
     member alfa1 : G1Point      
@@ -29,32 +28,21 @@ struct Proof:
 end
 
 #Auxiliary functions (Builders)
-#Returns number as BigInt3
-func getBigInt3{range_check_ptr}(number : felt) -> (r : BigInt3):
-    alloc_locals
-    let (output : felt*) = alloc()
-    split_int(number, 3, BASE, RC_BOUND, output)
-    return(BigInt3(output[0], output[1], output[2]))
-
-end
-
 #Creates a G1Point from the received felts: G1Point(x,y)
-func BuildG1Point{range_check_ptr : felt}(x : felt, y : felt) -> (r: G1Point):
+func BuildG1Point{range_check_ptr : felt}(x1 : felt, x2 : felt, x3 : felt, y1 : felt, y2 : felt, y3 : felt) -> (r: G1Point):
     alloc_locals
-    let X : BigInt3 = getBigInt3(x)
-    let Y : BigInt3 = getBigInt3(y)
+    let X : BigInt3 = BigInt3(x1,x2,x3)
+    let Y : BigInt3 = BigInt3(y1,y2,y3)
 
     return (G1Point(X,Y))
-
-end
         
 #Creates a G2Point from the received felts: G2Point([a,b],[c,d])
-func BuildG2Point{range_check_ptr : felt}(a : felt, b : felt, c : felt, d : felt) -> (r : G2Point):
+func BuildG2Point{range_check_ptr : felt}(a1 : felt, a2 : felt, a3 : felt, b1 : felt, b2 : felt, b3 : felt, c1 : felt, c2 : felt, c3 : felt, d1 : felt, d2 : felt, d3 : felt) -> (r : G2Point):
     alloc_locals
-    let A : BigInt3 = getBigInt3(a)
-    let B : BigInt3 = getBigInt3(b)
-    let C : BigInt3 = getBigInt3(c)    
-    let D : BigInt3 = getBigInt3(d)
+    let A : BigInt3 = BigInt3(a1,a2,a3)
+    let B : BigInt3 = BigInt3(b1,b2,b2)
+    let C : BigInt3 = BigInt3(c1,c2,c3)    
+    let D : BigInt3 = BigInt3(d1,d2,d3)
 
     let x : FQ2 = FQ2(A,B)
     let y : FQ2 = FQ2(C,D)
@@ -164,6 +152,7 @@ func pairingProd4{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point, b1 : G1Poi
 
 end
 
+#Data reception needs to be changed in order to accomodate split up numbers (will receive 3 nubers instead of one)
 func verifyingKey{range_check_ptr : felt}() -> (vk : VerifyingKey):
     alloc_locals
 	let alfa1 : G1Point = BuildG1Point(
@@ -219,7 +208,7 @@ func verify{range_check_ptr : felt}(input : BigInt3*, proof: Proof) -> (r : felt
     alloc_locals
     let vk : VerifyingKey = verifyingKey()
 
-    let initial_vk_x : G1Point = BuildG1Point(0,0)
+    let initial_vk_x : G1Point = BuildG1Point(0, 0, 0, 0, 0, 0)
     let computed_vk_x : G1Point = vk_x_linear_combination(initial_vk_x, input, 0, vk.IC_length - 1, vk.IC)
     let vk_x : G1Point = ec_add(computed_vk_x, vk.IC[0])
 
@@ -228,27 +217,28 @@ func verify{range_check_ptr : felt}(input : BigInt3*, proof: Proof) -> (r : felt
 
 end
 
-#Fills the empty array output with the BigInt3 version of each number in input
-func getBigInt3array{range_check_ptr : felt}(input : felt*, output : BigInt3*, position, length):
-    if position != length:
-        let big_int : BigInt3 = getBigInt3(input[position])
-        assert output[position] = big_int
+#Gathers each group of 3 numbers in input, and groups them as a BigInt3 in output
+func getBigInt3array{range_check_ptr : felt}(input : felt*, output : BigInt3*, input_position, output_position, length):
+    if output_position != length:
+        let big_int : BigInt3 = BigInt3(input[input_position], input[input_position + 1], input[input_position +2])
+        assert output[output_position] = big_int
 
-        getBigInt3array(input,output,position+1,length)
+        getBigInt3array(input,output,input_position+3, output_position+1,length)
         return()
     end
     return()
 end
 
+#a_len, b1_len, b2_len and c_len are all 6, input_len would be 3 * amount of inputs
 func verifyProof{range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt, b1 : felt*, b2_len : felt, b2 : felt*,
                                          c_len : felt, c : felt*, input_len : felt, input : felt*) -> (r : felt):
     alloc_locals
-    let A : G1Point = BuildG1Point(a[0], a[1])
-    let B : G2Point = BuildG2Point(b1[0], b1[1], b2[0], b2[1])
-    let C : G1Point = BuildG1Point(c[0], c[1])
+    let A : G1Point = BuildG1Point(a[0], a[1], a[2], a[3], a[4], a[5])
+    let B : G2Point = BuildG2Point(b1[0], b1[1], b1[2], b1[3], b1[4], b1[5], b2[0], b2[1], b2[2], b2[3], b2[4], b2[5])
+    let C : G1Point = BuildG1Point(c[0], c[1], c[2], c[3], c[4], c[5])
 
     let (big_input : BigInt3*) = alloc()
-    getBigInt3array(input, big_input, 0, input_len)
+    getBigInt3array(input, big_input, 0, 0, input_len/3)
 
     let proof : Proof = Proof(A, B, C)
     return verify(big_input, proof)
