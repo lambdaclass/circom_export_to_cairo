@@ -90,12 +90,12 @@ end
 
 #Computes the pairing for each pair of points in p1 and p2, multiplies each new result and returns the final result
 #pairing_result should iniially be an fq12_one
-func compute_pairings{range_check_ptr : felt}(p1 : G1Point*, p2 : G2Point*, pairing_result : FQ12, position : felt, lengh : felt) -> (result : FQ12):
-        if position != lengh:
+func compute_pairings{range_check_ptr : felt}(p1 : G1Point*, p2 : G2Point*, pairing_result : FQ12, position : felt, length : felt) -> (result : FQ12):
+        if position != length:
             let current_pairing_result : FQ12 = pairing(p2[position], p1[position])
             let mul_result : FQ12 = fq12_mul(pairing_result, current_pairing_result) 
 
-            return compute_pairings(p1, p2,mul_result, position+1, lengh)
+            return compute_pairings(p1, p2,mul_result, position+1, length)
         end
         return(pairing_result)
     end
@@ -205,15 +205,14 @@ func verifyingKey{range_check_ptr : felt}() -> (vk : VerifyingKey):
 end
     
 #Computes the linear combination for vk_x
-func vk_x_linear_combination{range_check_ptr : felt}( vk_x : G1Point, input : BigInt3*, position, length, IC : G1Point*) -> (result_vk_x : G1Point):
-    let mul_result : G1Point = ec_mul(IC[position + 1], input[position])
-    let add_result : G1Point = ec_add(vk_x, mul_result)
-
+func vk_x_linear_combination{range_check_ptr : felt}( vk_x : G1Point, input : BigInt3*, position : felt, length : felt, IC : G1Point*) -> (result_vk_x : G1Point):
     if position != length:
+        let mul_result : G1Point = ec_mul(IC[position + 1], input[position])
+        let add_result : G1Point = ec_add(vk_x, mul_result)
+    
         return vk_x_linear_combination(add_result, input, position + 1, length,  IC)
-    else:
-            return(add_result)
     end
+        return(vk_x)
 end
 
 func verify{range_check_ptr : felt}(input : BigInt3*, proof: Proof) -> (r : felt):
@@ -230,12 +229,12 @@ func verify{range_check_ptr : felt}(input : BigInt3*, proof: Proof) -> (r : felt
 end
 
 #Fills the empty array output with the BigInt3 version of each number in input
-func getBigInt3array{range_check_ptr : felt}(input : felt*, output : BigInt3*, position, lengh):
-    if position != lengh:
+func getBigInt3array{range_check_ptr : felt}(input : felt*, output : BigInt3*, position, length):
+    if position != length:
         let big_int : BigInt3 = getBigInt3(input[position])
         assert output[position] = big_int
 
-        getBigInt3array(input,output,position+1,lengh)
+        getBigInt3array(input,output,position+1,length)
         return()
     end
     return()
