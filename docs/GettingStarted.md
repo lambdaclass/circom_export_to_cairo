@@ -15,6 +15,8 @@ Our work consists of creating a cairo template, based off of this solidity templ
 * [cairo-alt_bn128 Library](https://github.com/tekkac/cairo-alt_bn128): Contains the functions needed to handle everything elliptic-curve related.
 
 Other useful texts:
+
 * [Cairo for Blockchain Developers](https://www.cairo-lang.org/cairo-for-blockchain-developers/): it’s a good text to learn more about cairo.
 * [Create your first zero-knowledge snark circuit using circom and snarkjs](https://blog.iden3.io/first-zk-proof.html): it’s complementary reading of Circom 2 Documentation.
+* [Elliptic Curve Cryptography Explainded](https://fangpenlin.com/posts/2019/10/07/elliptic-curve-cryptography-explained/): Explains how elliptic curves work (Recommended)
 * [The Basics of Pairings](https://www.youtube.com/watch?v=F4x2kQTKYFY): Explains how elliptic curves work, and their use in cryptography (Not a must watch, only recommend watching the first hour if interested).
