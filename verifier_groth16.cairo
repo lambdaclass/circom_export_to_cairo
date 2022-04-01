@@ -46,18 +46,21 @@ func BuildG2Point{range_check_ptr : felt}(a1 : felt, a2 : felt, a3 : felt, b1 : 
     let C : BigInt3 = BigInt3(c1,c2,c3)    
     let D : BigInt3 = BigInt3(d1,d2,d3)
 
-    let x : FQ2 = FQ2(A,B)
-    let y : FQ2 = FQ2(C,D)
+    let x : FQ2 = FQ2(B,A)
+    let y : FQ2 = FQ2(D,C)
 
     return (G2Point(x, y))
 
 end
 
 #Returns negated BigInt3
-func negateBigInt3(n : BigInt3) -> (r : BigInt3):
-    let d0 = -n.d0
-    let d1 = -n.d1
-    let d2 = -n.d2
+func negateBigInt3{range_check_ptr : felt}(n : BigInt3) -> (r : BigInt3):
+    let (_, nd0) = unsigned_div_rem(n.d0, 60193888514187762220203335)
+    let d0 = 60193888514187762220203335 -nd0
+    let (_, nd1) = unsigned_div_rem(n.d1, 60193888514187762220203335)
+    let d1 = 104997207448309323063248289 -nd1
+    let (_, nd2) = unsigned_div_rem(n.d2, 60193888514187762220203335)
+    let d2 = 3656382694611191768777987 -nd2
 
     return(BigInt3(d0,d1,d2))
 
