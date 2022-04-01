@@ -209,10 +209,10 @@ func vk_x_linear_combination{range_check_ptr : felt}( vk_x : G1Point, input : Bi
         return(vk_x)
 end
 
-func verify{range_check_ptr : felt}(input : BigInt3*, proof: Proof) -> (r : felt):
+func verify{range_check_ptr : felt}(input : BigInt3*, proof: Proof, input_len : felt) -> (r : felt):
     alloc_locals
     let vk : VerifyingKey = verifyingKey()
-
+    assert input_len = vk.IC_length + 1
     let initial_vk_x : G1Point = BuildG1Point(0, 0, 0, 0, 0, 0)
     let computed_vk_x : G1Point = vk_x_linear_combination(initial_vk_x, input, 0, vk.IC_length - 1, vk.IC)
     let vk_x : G1Point = ec_add(computed_vk_x, vk.IC[0])
@@ -246,6 +246,6 @@ func verifyProof{range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt,
     getBigInt3array(input, big_input, 0, 0, input_len/3)
 
     let proof : Proof = Proof(A, B, C)
-    return verify(big_input, proof)
+    return verify(big_input, proof, input_len)
 
 end
