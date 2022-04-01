@@ -2,7 +2,7 @@
 %builtins range_check 
 
 from starkware.cairo.common.bool import FALSE, TRUE
-from starkware.cairo.common.math import assert_nn, split_int
+from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 from alt_bn128_g1 import G1Point, g1, ec_add, ec_mul
 from alt_bn128_g2 import G2Point, g2
