@@ -11,7 +11,7 @@ This Repository contains the following:
 - verifier_groth16.cairo a work-in-progress template for cairo
 - verifier_groth16.sol the original template used by snarkjs to generate a SolidityVerifier
 - playground.cairo a simple example program written in cairo
-- Makefile used tu compile and run the playground.cairo through the commands "make compile" and "make run", and "make generate_verifier", used to create a verifier.cairo with our template (explained below)
+- Makefile used to compile and run the playground.cairo through the commands "make compile" and "make run", and "make generate_verifier", used to create a verifier.cairo with our template (explained below)
 - Dockerfile used to create a docker image with everything ready to compile and run cairo code, and generate a verifier through snarkjs
 - example_001.zkey, a validation key generated though circom from a basic circuit
 
