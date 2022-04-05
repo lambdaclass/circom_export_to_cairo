@@ -106,38 +106,6 @@ func pairings{range_check_ptr : felt}(p1 : G1Point*, p2: G2Point*, length : felt
     return(result)
  end
 
-#Pairing check for two pairs
-func pairingProd2{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point, b1 : G1Point, b2 : G2Point) -> (r : felt):
-    let (p1 : G1Point*) = alloc()
-    let (p2 : G2Point*) = alloc()
-
-    assert p1[0] = a1
-    assert p1[1] = b1
-
-    assert p2[0] = a2
-    assert p2[1] = b2
-
-    return pairings(p1,p2,2)
-
-end
-
-#Pairing check for three pairs
-func pairingProd3{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point,  b1 : G1Point, b2 : G2Point, c1 : G1Point, c2 : G2Point) -> (r : felt):
-    let (p1 : G1Point*) = alloc()
-    let (p2 : G2Point*) = alloc()
-
-    assert p1[0] = a1
-    assert p1[1] = b1
-    assert p1[2] = c1
-
-    assert p2[0] = a2
-    assert p2[1] = b2
-    assert p2[2] = c2
-
-    return pairings(p1,p2,3)
-
-end
-
 #Pairing check for four pairs
 func pairingProd4{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point, b1 : G1Point, b2 : G2Point, c1 : G1Point, c2 : G2Point, d1 : G1Point, d2 : G2Point) -> (r : felt):
     let (p1 : G1Point*) = alloc()
@@ -160,7 +128,7 @@ end
 func verifyingKey{range_check_ptr : felt}() -> (vk : VerifyingKey):
     alloc_locals
 	let alfa1 : G1Point = BuildG1Point(
-        <%=vk_alpha_1[0]%>, <%=vk_alpha_1[1]%> <%=vk_alpha_1[2]%>,
+        <%=vk_alpha_1[0]%>, <%=vk_alpha_1[1]%>, <%=vk_alpha_1[2]%>,
         <%=vk_alpha_1[3]%>, <%=vk_alpha_1[4]%>, <%=vk_alpha_1[5]%>,
     )
 
