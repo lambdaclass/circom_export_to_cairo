@@ -14,9 +14,14 @@ Our work consists of creating a cairo template, based off of this solidity templ
 * [Hello, StarkNet](https://www.cairo-lang.org/docs/hello_starknet/index.html): To learn about starknet contracts
 * [cairo-alt_bn128 Library](https://github.com/tekkac/cairo-alt_bn128): Contains the functions needed to handle everything elliptic-curve related.
 
-Other useful texts:
+Other useful texts and resources:
 
 * [Cairo for Blockchain Developers](https://www.cairo-lang.org/cairo-for-blockchain-developers/): it’s a good text to learn more about cairo.
 * [Create your first zero-knowledge snark circuit using circom and snarkjs](https://blog.iden3.io/first-zk-proof.html): it’s complementary reading of Circom 2 Documentation.
 * [Elliptic Curve Cryptography Explainded](https://fangpenlin.com/posts/2019/10/07/elliptic-curve-cryptography-explained/): Explains how elliptic curves work (Recommended)
 * [The Basics of Pairings](https://www.youtube.com/watch?v=F4x2kQTKYFY): Explains how elliptic curves work, and their use in cryptography (Not a must watch, only recommend watching the first hour if interested).
+* [Swagtimus.ethL2'22’s Newsletter](https://swagtimus.substack.com): Weekly summary of all things StarkNet
+* [starknet-devnet](https://github.com/Shard-Labs/starknet-devnet): A devnet who's aim is to mimic the official Starknet Alpha testnet
+* [Cairo smart test framework](https://github.com/bellissimogiorno/cairo-integer-types/blob/main/templates/cairo_smart_test_framework.py): Provides tools for unit- and property-based testing Cairo code from within Python
+* [Cairo Goldmine](https://github.com/beautyisourbusiness/cairo-goldmine): Comprehensive list of repositories on the starknet ecosystem
+* [pytest-cairo](https://github.com/TimNooren/pytest-cairo): pytest support for cairo-lang and starknet
