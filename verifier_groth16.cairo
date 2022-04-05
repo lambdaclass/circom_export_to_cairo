@@ -1,11 +1,12 @@
 #This is a template for cairo based on verifier_groth16.sol.ejs on snarkjs/templates
+%lang starknet
 %builtins range_check 
 
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
-from alt_bn128_g1 import G1Point, g1, ec_add, ec_mul
-from alt_bn128_g2 import G2Point, g2
+from alt_bn128_g1 import G1Point, ec_add, ec_mul
+from alt_bn128_g2 import G2Point
 from alt_bn128_pair import pairing
 from alt_bn128_field import FQ12, is_zero, FQ2, fq12_diff, fq12_eq_zero, fq12_mul, fq12_one
 from bigint import BigInt3
@@ -133,7 +134,7 @@ func verifyingKey{range_check_ptr : felt}() -> (vk : VerifyingKey):
     )
 
     let beta2 : G2Point = BuildG2Point(
-        <%=vk_beta_2[0][3]%>, <%=vk_beta_2[0][4]%>, <%=vk_beta_2[0][5]%>
+        <%=vk_beta_2[0][3]%>, <%=vk_beta_2[0][4]%>, <%=vk_beta_2[0][5]%>,
         <%=vk_beta_2[0][0]%>, <%=vk_beta_2[0][1]%>, <%=vk_beta_2[0][2]%>,
         <%=vk_beta_2[1][3]%>, <%=vk_beta_2[1][4]%>, <%=vk_beta_2[1][5]%>,
         <%=vk_beta_2[1][0]%>, <%=vk_beta_2[1][1]%>, <%=vk_beta_2[1][2]%>
@@ -201,7 +202,8 @@ func getBigInt3array{range_check_ptr : felt}(input : felt*, output : BigInt3*, i
     return()
 end
 
-#a_len, b1_len, b2_len and c_len are all 6, input_len would be 3* inputs
+#a_len, b1_len, b2_len and c_len are all 6, input_len would be 3 * amount of inputs
+@external
 func verifyProof{range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt, b1 : felt*, b2_len : felt, b2 : felt*,
                                          c_len : felt, c : felt*, input_len : felt, input : felt*) -> (r : felt):
     alloc_locals
