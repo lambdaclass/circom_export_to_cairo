@@ -157,39 +157,38 @@ func pairingProd4{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point, b1 : G1Poi
 
 end
 
-#Data reception needs to be changed in order to accomodate split up numbers
 func verifyingKey{range_check_ptr : felt}() -> (vk : VerifyingKey):
     alloc_locals
 	let alfa1 : G1Point = BuildG1Point(
-        <%=vk_alpha_1[0]%>,
-        <%=vk_alpha_1[1]%>
+        <%=vk_alpha_1[0]%>, <%=vk_alpha_1[1]%> <%=vk_alpha_1[2]%>,
+        <%=vk_alpha_1[3]%>, <%=vk_alpha_1[4]%>, <%=vk_alpha_1[5]%>,
     )
 
     let beta2 : G2Point = BuildG2Point(
-        <%=vk_beta_2[0][1]%>,
-        <%=vk_beta_2[0][0]%>,
-        <%=vk_beta_2[1][1]%>,
-        <%=vk_beta_2[1][0]%>
+        <%=vk_beta_2[0][3]%>, <%=vk_beta_2[0][4]%>, <%=vk_beta_2[0][5]%>
+        <%=vk_beta_2[0][0]%>, <%=vk_beta_2[0][1]%>, <%=vk_beta_2[0][2]%>,
+        <%=vk_beta_2[1][3]%>, <%=vk_beta_2[1][4]%>, <%=vk_beta_2[1][5]%>,
+        <%=vk_beta_2[1][0]%>, <%=vk_beta_2[1][1]%>, <%=vk_beta_2[1][2]%>
     )
 
     let gamma2 : G2Point = BuildG2Point(
-        <%=vk_gamma_2[0][1]%>,
-        <%=vk_gamma_2[0][0]%>,
-        <%=vk_gamma_2[1][1]%>,
-        <%=vk_gamma_2[1][0]%>
+        <%=vk_gamma_2[0][3]%>, <%=vk_gamma_2[0][4]%>, <%=vk_gamma_2[0][5]%>,
+        <%=vk_gamma_2[0][0]%>, <%=vk_gamma_2[0][1]%>, <%=vk_gamma_2[0][2]%>,
+        <%=vk_gamma_2[1][3]%>, <%=vk_gamma_2[1][4]%>, <%=vk_gamma_2[1][5]%>,
+        <%=vk_gamma_2[1][0]%>, <%=vk_gamma_2[1][1]%>, <%=vk_gamma_2[1][2]%>
     )
     let delta2 : G2Point = BuildG2Point(
-        <%=vk_delta_2[0][1]%>,
-        <%=vk_delta_2[0][0]%>,
-        <%=vk_delta_2[1][1]%>,
-        <%=vk_delta_2[1][0]%>
+        <%=vk_delta_2[0][3]%>, <%=vk_delta_2[0][4]%>, <%=vk_delta_2[0][5]%>,
+        <%=vk_delta_2[0][0]%>, <%=vk_delta_2[0][1]%>, <%=vk_delta_2[0][2]%>,
+        <%=vk_delta_2[1][3]%>, <%=vk_delta_2[1][4]%>, <%=vk_delta_2[1][5]%>,
+        <%=vk_delta_2[1][0]%>, <%=vk_delta_2[1][1]%>, <%=vk_delta_2[1][2]%>
     )
         
     let (IC : G1Point*) = alloc()
     <% for (let i=0; i<IC.length; i++) { %>
     let point_<%=i%> : G1Point =  BuildG1Point( 
-        <%=IC[i][0]%>,
-        <%=IC[i][1]%>)
+        <%=IC[i][0]%>, <%=IC[i][1]%>, <%=IC[i][2]%>,
+        <%=IC[i][3]%>, <%=IC[i][4]%>, <%=IC[i][5]%>)
     assert IC[<%=i%>] =  point_<%=i%>                                   
     <% } %>
     let IC_length : felt = <%=IC.length%> 
