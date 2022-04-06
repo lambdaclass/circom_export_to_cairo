@@ -43,7 +43,7 @@ end
 func BuildG2Point{range_check_ptr : felt}(a1 : felt, a2 : felt, a3 : felt, b1 : felt, b2 : felt, b3 : felt, c1 : felt, c2 : felt, c3 : felt, d1 : felt, d2 : felt, d3 : felt) -> (r : G2Point):
     alloc_locals
     let A : BigInt3 = BigInt3(a1,a2,a3)
-    let B : BigInt3 = BigInt3(b1,b2,b2)
+    let B : BigInt3 = BigInt3(b1,b2,b3)
     let C : BigInt3 = BigInt3(c1,c2,c3)    
     let D : BigInt3 = BigInt3(d1,d2,d3)
 
@@ -58,9 +58,9 @@ end
 func negateBigInt3{range_check_ptr : felt}(n : BigInt3) -> (r : BigInt3):
     let (_, nd0) = unsigned_div_rem(n.d0, 60193888514187762220203335)
     let d0 = 60193888514187762220203335 -nd0
-    let (_, nd1) = unsigned_div_rem(n.d1, 60193888514187762220203335)
+    let (_, nd1) = unsigned_div_rem(n.d1, 104997207448309323063248289)
     let d1 = 104997207448309323063248289 -nd1
-    let (_, nd2) = unsigned_div_rem(n.d2, 60193888514187762220203335)
+    let (_, nd2) = unsigned_div_rem(n.d2, 3656382694611191768777987)
     let d2 = 3656382694611191768777987 -nd2
 
     return(BigInt3(d0,d1,d2))
