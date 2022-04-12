@@ -1,7 +1,7 @@
 #This is a template for cairo based on verifier_groth16.sol.ejs on snarkjs/templates
 %lang starknet
-%builtins range_check 
 
+from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
@@ -43,7 +43,7 @@ end
 func BuildG2Point{range_check_ptr : felt}(a1 : felt, a2 : felt, a3 : felt, b1 : felt, b2 : felt, b3 : felt, c1 : felt, c2 : felt, c3 : felt, d1 : felt, d2 : felt, d3 : felt) -> (r : G2Point):
     alloc_locals
     let A : BigInt3 = BigInt3(a1,a2,a3)
-    let B : BigInt3 = BigInt3(b1,b2,b2)
+    let B : BigInt3 = BigInt3(b1,b2,b3)
     let C : BigInt3 = BigInt3(c1,c2,c3)    
     let D : BigInt3 = BigInt3(d1,d2,d3)
 
@@ -58,9 +58,9 @@ end
 func negateBigInt3{range_check_ptr : felt}(n : BigInt3) -> (r : BigInt3):
     let (_, nd0) = unsigned_div_rem(n.d0, 60193888514187762220203335)
     let d0 = 60193888514187762220203335 -nd0
-    let (_, nd1) = unsigned_div_rem(n.d1, 60193888514187762220203335)
+    let (_, nd1) = unsigned_div_rem(n.d1, 104997207448309323063248289)
     let d1 = 104997207448309323063248289 -nd1
-    let (_, nd2) = unsigned_div_rem(n.d2, 60193888514187762220203335)
+    let (_, nd2) = unsigned_div_rem(n.d2, 3656382694611191768777987)
     let d2 = 3656382694611191768777987 -nd2
 
     return(BigInt3(d0,d1,d2))
@@ -204,7 +204,7 @@ end
 
 #a_len, b1_len, b2_len and c_len are all 6, input_len would be 3 * amount of inputs
 @external
-func verifyProof{range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt, b1 : felt*, b2_len : felt, b2 : felt*,
+func verifyProof{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt, b1 : felt*, b2_len : felt, b2 : felt*,
                                          c_len : felt, c : felt*, input_len : felt, input : felt*) -> (r : felt):
     alloc_locals
     let A : G1Point = BuildG1Point(a[0], a[1], a[2], a[3], a[4], a[5])
@@ -215,6 +215,7 @@ func verifyProof{range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt,
     getBigInt3array(input, big_input, 0, 0, input_len/3)
 
     let proof : Proof = Proof(A, B, C)
-    return verify(big_input, proof, input_len)
+    let result : felt = verify(big_input, proof, input_len)
+    return(result)
 
 end
