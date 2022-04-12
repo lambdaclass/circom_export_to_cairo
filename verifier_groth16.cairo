@@ -1,7 +1,7 @@
 #This is a template for cairo based on verifier_groth16.sol.ejs on snarkjs/templates
 %lang starknet
-%builtins range_check 
 
+from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
@@ -204,7 +204,7 @@ end
 
 #a_len, b1_len, b2_len and c_len are all 6, input_len would be 3 * amount of inputs
 @external
-func verifyProof{range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt, b1 : felt*, b2_len : felt, b2 : felt*,
+func verifyProof{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt, b1 : felt*, b2_len : felt, b2 : felt*,
                                          c_len : felt, c : felt*, input_len : felt, input : felt*) -> (r : felt):
     alloc_locals
     let A : G1Point = BuildG1Point(a[0], a[1], a[2], a[3], a[4], a[5])
@@ -215,6 +215,7 @@ func verifyProof{range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt,
     getBigInt3array(input, big_input, 0, 0, input_len/3)
 
     let proof : Proof = Proof(A, B, C)
-    return verify(big_input, proof, input_len)
+    let result : felt = verify(big_input, proof, input_len)
+    return(result)
 
 end
