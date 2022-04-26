@@ -1,4 +1,4 @@
-PHONY: docker-build, docker-run, compile, run, clean, patch, generate_verifier, generate_calldata
+PHONY: docker-build, docker-run, compile, run, clean, get-lib, patch, generate_verifier, generate_calldata
 
 docker-build: Dockerfile
 
@@ -21,6 +21,14 @@ run: playground-compiled.json
 clean : playground-compiled.json
 
 	rm playground-compiled.json
+
+#Installs cairo-alt_bn128 library, used by the verifier
+get-lib: 
+
+	git clone https://github.com/tekkac/cairo-alt_bn128.git
+	cp ./cairo-alt_bn128/alt_bn128* .
+	cp ./cairo-alt_bn128/bigint.cairo .
+	cp -r ./cairo-alt_bn128/utils .
 
 #Patches snarkjs in order to add the ability to export a cairo verifier and its calldata
 patch : verifier_groth16.cairo snarkjscli.patch
