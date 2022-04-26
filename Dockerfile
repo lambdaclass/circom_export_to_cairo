@@ -7,7 +7,9 @@ RUN apt update && apt upgrade -y && \
 
 COPY verifier_groth16.cairo  /home
 COPY playground.cairo  /home
-COPY example_0001.zkey /home
+COPY example-data/example_0001.zkey /home
+COPY example-data/public.json /home
+COPY example-data/proof.json /home
 COPY Makefile /home
 COPY snarkjscli.patch /home
 

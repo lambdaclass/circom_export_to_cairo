@@ -32,3 +32,7 @@ patch : verifier_groth16.cairo snarkjscli.patch
 generate_verifier : example_0001.zkey
 
 	snarkjs zkey export cairoverifier example_0001.zkey verifier.cairo
+
+generate_calldata : proof.json public.json
+
+	snarkjs okey export cairocalldata
