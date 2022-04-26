@@ -18,40 +18,36 @@ struct VerifyingKey:
     member delta2 : G2Point 
     member IC : G1Point*
     member IC_length : felt
-
 end
 
 struct Proof:
 	member A : G1Point 
 	member B : G2Point 
 	member C : G1Point 
-
 end
 
 #Auxiliary functions (Builders)
 #Creates a G1Point from the received felts: G1Point(x,y)
 func BuildG1Point{range_check_ptr : felt}(x1 : felt, x2 : felt, x3 : felt, y1 : felt, y2 : felt, y3 : felt) -> (r: G1Point):
     alloc_locals
-    let X : BigInt3 = BigInt3(x1,x2,x3)
-    let Y : BigInt3 = BigInt3(y1,y2,y3)
+    let X : BigInt3 = BigInt3(x1, x2, x3)
+    let Y : BigInt3 = BigInt3(y1, y2, y3)
 
-    return (G1Point(X,Y))
-
+    return (G1Point(X, Y))
 end
         
 #Creates a G2Point from the received felts: G2Point([a,b],[c,d])
 func BuildG2Point{range_check_ptr : felt}(a1 : felt, a2 : felt, a3 : felt, b1 : felt, b2 : felt, b3 : felt, c1 : felt, c2 : felt, c3 : felt, d1 : felt, d2 : felt, d3 : felt) -> (r : G2Point):
     alloc_locals
-    let A : BigInt3 = BigInt3(a1,a2,a3)
-    let B : BigInt3 = BigInt3(b1,b2,b3)
-    let C : BigInt3 = BigInt3(c1,c2,c3)    
-    let D : BigInt3 = BigInt3(d1,d2,d3)
+    let A : BigInt3 = BigInt3(a1, a2, a3)
+    let B : BigInt3 = BigInt3(b1, b2, b3)
+    let C : BigInt3 = BigInt3(c1, c2, c3)    
+    let D : BigInt3 = BigInt3(d1, d2, d3)
 
-    let x : FQ2 = FQ2(B,A)
-    let y : FQ2 = FQ2(D,C)
+    let x : FQ2 = FQ2(B, A)
+    let y : FQ2 = FQ2(D, C)
 
     return (G2Point(x, y))
-
 end
 
 #Returns negated BigInt3
@@ -63,8 +59,7 @@ func negateBigInt3{range_check_ptr : felt}(n : BigInt3) -> (r : BigInt3):
     let (_, nd2) = unsigned_div_rem(n.d2, 3656382694611191768777987)
     let d2 = 3656382694611191768777987 -nd2
 
-    return(BigInt3(d0,d1,d2))
-
+    return(BigInt3(d0, d1, d2))
 end
 
 #Returns negated G1Point(addition of a G1Point and a negated G1Point should be zero)
@@ -74,7 +69,7 @@ func negate{range_check_ptr : felt}(p : G1Point) -> (r: G1Point):
 	if x_is_zero == TRUE:
         let y_is_zero : felt = is_zero(p.y)
 		if y_is_zero == TRUE:
-            return (G1Point(BigInt3(0,0,0),BigInt3(0,0,0)))
+            return (G1Point(BigInt3(0, 0, 0),BigInt3(0, 0, 0)))
         end
     end
 
@@ -92,14 +87,14 @@ func compute_pairings{range_check_ptr : felt}(p1 : G1Point*, p2 : G2Point*, pair
             return compute_pairings(p1, p2,mul_result, position+1, length)
         end
         return(pairing_result)
-    end
+end
 
 #Returns the result of computing the pairing check
 func pairings{range_check_ptr : felt}(p1 : G1Point*, p2: G2Point*, length : felt) -> (r : felt):
     alloc_locals
     assert_nn(length)
     let initial_result : FQ12 = fq12_one()
-    let pairing_result : FQ12 = compute_pairings(p1,p2,initial_result,0,length)
+    let pairing_result : FQ12 = compute_pairings(p1, p2, initial_result, 0, length)
 
     let one : FQ12 = fq12_one()
     let diff : FQ12 = fq12_diff(pairing_result, one)
@@ -122,8 +117,7 @@ func pairingProd4{range_check_ptr : felt}(a1 : G1Point, a2 : G2Point, b1 : G1Poi
     assert p2[2] = c2
     assert p2[3] = d2
 
-    return pairings(p1,p2,4)
-
+    return pairings(p1, p2, 4)
 end
 
 func verifyingKey{range_check_ptr : felt}() -> (vk : VerifyingKey):
@@ -163,7 +157,6 @@ func verifyingKey{range_check_ptr : felt}() -> (vk : VerifyingKey):
     let IC_length : felt = <%=IC.length%> 
 
     return(VerifyingKey(alfa1, beta2, gamma2, delta2, IC, IC_length))
-
 end
     
 #Computes the linear combination for vk_x
@@ -204,8 +197,8 @@ end
 
 #a_len, b1_len, b2_len and c_len are all 6, input_len would be 3 * amount of inputs
 @external
-func verifyProof{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt, b1 : felt*, b2_len : felt, b2 : felt*,
-                                         c_len : felt, c : felt*, input_len : felt, input : felt*) -> (r : felt):
+func verifyProof{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr : felt}(a_len : felt, a : felt*, b1_len : felt, 
+                b1 : felt*, b2_len : felt, b2 : felt*, c_len : felt, c : felt*, input_len : felt, input : felt*) -> (r : felt):
     alloc_locals
     let A : G1Point = BuildG1Point(a[0], a[1], a[2], a[3], a[4], a[5])
     let B : G2Point = BuildG2Point(b1[0], b1[1], b1[2], b1[3], b1[4], b1[5], b2[0], b2[1], b2[2], b2[3], b2[4], b2[5])
@@ -217,5 +210,4 @@ func verifyProof{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     let proof : Proof = Proof(A, B, C)
     let result : felt = verify(big_input, proof, input_len)
     return(result)
-
 end
