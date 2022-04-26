@@ -1,4 +1,4 @@
-PHONY: docker-build, docker-run, compile, run, clean, patch, generate_verifier
+PHONY: docker-build, docker-run, compile, run, clean, patch, generate_verifier, generate_calldata
 
 docker-build: Dockerfile
 
@@ -33,6 +33,7 @@ generate_verifier : example_0001.zkey
 
 	snarkjs zkey export cairoverifier example_0001.zkey verifier.cairo
 
+#Generates the inputs for the verifier contract
 generate_calldata : proof.json public.json
 
-	snarkjs okey export cairocalldata
+	snarkjs zkey export cairocalldata
