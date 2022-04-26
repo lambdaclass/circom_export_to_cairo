@@ -9,5 +9,6 @@ COPY verifier_groth16.cairo  /home
 COPY playground.cairo  /home
 COPY example_0001.zkey /home
 COPY Makefile /home
+COPY snarkjscli.patch /home
 
 WORKDIR /home

@@ -1,4 +1,4 @@
-PHONY: docker-build, docker-run, compile, run, clean ,generate_verifier, make_verifier, replace_template
+PHONY: docker-build, docker-run, compile, run, clean, patch, generate_verifier
 
 docker-build: Dockerfile
 
@@ -22,14 +22,13 @@ clean : playground-compiled.json
 
 	rm playground-compiled.json
 
+#Patches snarkjs in order to add the ability to export a cairo verifier and its calldata
+patch : verifier_groth16.cairo snarkjscli.patch
+
+	cp verifier_groth16.cairo /usr/local/lib/node_modules/snarkjs/templates/verifier_groth16.cairo.ejs
+	patch /usr/local/lib/node_modules/snarkjs/build/cli.cjs snarkjscli.patch
+
 #Generates a cairo verifier by replacing the original template
-generate_verifier : replace_template make_verifier
+generate_verifier : example_0001.zkey
 
-replace_template: verifier_groth16.cairo 
-
-	cp verifier_groth16.cairo verifier_groth16.sol.ejs
-	mv verifier_groth16.sol.ejs /usr/local/lib/node_modules/snarkjs/templates/verifier_groth16.sol.ejs
-
-make_verifier: example_0001.zkey
-
-	snarkjs zkey export solidityverifier example_0001.zkey verifier.cairo
+	snarkjs zkey export cairoverifier example_0001.zkey verifier.cairo
